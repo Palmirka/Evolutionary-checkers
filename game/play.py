@@ -1,4 +1,4 @@
-from game.constants import AGENT, OPPONENT
+from game.constants import WHITE, BLACK
 from numpy import ndarray
 from math import inf
 from copy import deepcopy
@@ -39,9 +39,9 @@ class Play:
 
     def play(self):
         """Gameplay against opponent"""
-        self.game.board.player_turn = random.choice([AGENT, OPPONENT])
+        self.game.board.player_turn = random.choice([WHITE, BLACK])
         while not self.game.is_over():
-            if self.game.whose_turn() == AGENT:
+            if self.game.whose_turn() == WHITE:
                 best_move = self.find_best_move()
                 self.game.move(best_move['field'])
             else:

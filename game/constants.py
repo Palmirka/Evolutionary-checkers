@@ -1,5 +1,17 @@
-AGENT = 1
-OPPONENT = 2
+NOT_USED = -1
+EMPTY = 0
+WHITE = 1
+BLACK = 2
+UNKNOWN = 3
+
+fields_in_use = [0, 2, 4, 6,
+                 9, 11, 13, 15,
+                 16, 18, 20, 22,
+                 25, 27, 29, 31,
+                 32, 34, 36, 38,
+                 41, 43, 45, 47,
+                 48, 50, 52, 54,
+                 57, 59, 61, 63]
 
 titles = {0: 'pawns',
           1: 'kings',
