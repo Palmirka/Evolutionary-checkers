@@ -1,27 +1,3 @@
-from game.constants import fields_in_use
-from game.constants import WHITE, BLACK
-from evolutionary_algorithm.preparation.reader import read_file
-
-# file_path_4x4 = "boards_analyse_4x4_32897_games.txt"
-# file_path_3x3 = "boards_analyse_3x3_32897_games.txt"
-# file_path_2x2 = "boards_analyse_2x2_32897_games.txt"
-#
-# dict_2x2 = read_file(file_path_2x2, 0)
-# dict_3x3 = read_file(file_path_3x3, 512)
-# dict_4x4 = read_file(file_path_4x4, 2048)
-#
-# print(dict_4x4)
-#
-d = {(0, 1, 8, 9): [[0, -1, -1, 0], [0, -1, -1, 1], [0, -1, -1, 2], [1, -1, -1, 0], [1, -1, -1, 1], [1, -1, -1, 2],
-                    [2, -1, -1, 0], [2, -1, -1, 1], [2, -1, -1, 2]],
-     (1, 2, 9, 10): [[-1, 0, 0, -1], [-1, 0, 1, -1], [-1, 0, 2, -1], [-1, 1, 0, -1], [-1, 1, 1, -1], [-1, 1, 2, -1],
-                     [-1, 2, 0, -1], [-1, 2, 1, -1], [-1, 2, 2, -1]],
-     (12, 13, 20, 21): [[-1, 0, 0, -1], [-1, 0, 1, -1], [-1, 0, 2, -1], [-1, 1, 0, -1], [-1, 1, 1, -1], [-1, 1, 2, -1],
-                        [-1, 2, 0, -1], [-1, 2, 1, -1], [-1, 2, 2, -1]]}
-
-board = 11529215046068731905
-# print(bin(board)[2:].zfill(64))
-
 MAX = 2 ** 64 - 1
 
 
@@ -55,30 +31,3 @@ def binary_of_keys(dict, color):
                             mask += 1
                     result_value[idx] += mask
     return result_key >> 1, result_value
-
-
-def check_board(board):
-    pass
-
-
-def debug(dict, n):
-    binary_keys, binary_white = binary_of_keys(dict, WHITE)
-    binary_keys, binary_black = binary_of_keys(dict, BLACK)
-    print(bin(binary_keys))
-    print(binary_white)
-    print({key: bin(value) for key, value in binary_white.items()})
-    binary_white = {key: ~value ^ (value & (MAX if (board >> key) % 2 else 0))
-                    for key, value in binary_white.items()}
-    binary_black = {key: ~value ^ (value & (MAX if (board >> key) % 2 else 0))
-                    for key, value in binary_black.items()}
-    # print({key: bin(value)[2:].zfill(n) for key, value in binary_white.items()})
-
-
-# dict = {}
-# dict.update(dict_2x2[0])
-# dict.update(dict_3x3[0])
-# dict.update(dict_4x4[0])
-
-# debug(dict, dict_2x2[1] + dict_3x3[1] + dict_4x4[1])
-
-debug(d, 27)

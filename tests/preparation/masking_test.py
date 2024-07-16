@@ -1,7 +1,6 @@
 import unittest
 import random
 from game.constants import WHITE, BLACK
-# import evolutionary_algorithm.preparation.combinations
 from evolutionary_algorithm.preparation.masking import binary_of_keys
 
 
