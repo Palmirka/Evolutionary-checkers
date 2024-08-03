@@ -31,10 +31,14 @@ def generate_result(dictionary, color):
     return result_value
 
 
-def generate_result_keys(dictionary):
-    result = ''
-    for key in dictionary.keys():
-        result += '1' + ('0' * len(dictionary[key]))
+def generate_result_usage(dictionary):
+    result = {idx: 0 for idx in range(64)}
+    for key, value in dictionary.items():
+        for _ in range(len(value)):
+            for result_key in result.keys():
+                result[result_key] <<= 1
+                if result_key in key:
+                    result[result_key] += 1
     return result
 
 
@@ -106,22 +110,29 @@ class StaticTest(unittest.TestCase, BaseMaskingTest):
                           40: 0, 41: 0, 42: 0, 43: 0, 44: 0, 45: 0, 46: 0, 47: 0, 48: 0, 49: 0, 50: 0, 51: 0,
                           52: 0, 53: 0, 54: 0, 55: 0, 56: 0, 57: 0, 58: 0, 59: 0, 60: 0, 61: 0, 62: 0, 63: 0}
 
-
-        result_keys = int('1000001000000001000', 2)
+        result_keys = {0: int(0b1111100000000000), 1: int(0b1111100000000000), 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0,
+                       8: int(0b1111100000000111), 9: int(0b1111100000000111), 10: int(0b11111111111),
+                       11: int(0b11111111111), 12: int(0b11111111000), 13: 0, 14: 0, 15: 0, 16: int(0b111),
+                       17: int(0b111), 18: int(0b11111111111), 19: int(0b11111111111), 20: int(0b11111111000),
+                       21: 0, 22: 0, 23: 0, 24: int(0b111), 25: int(0b111), 26: int(0b11111111111),
+                       27: int(0b11111111111), 28: int(0b11111111000), 29: 0, 30: 0, 31: 0, 32: int(0b111),
+                       33: int(0b111), 34: int(0b111), 35: int(0b111), 36: 0, 37: 0, 38: 0, 39: 0,
+                       40: 0, 41: 0, 42: 0, 43: 0, 44: 0, 45: 0, 46: 0, 47: 0, 48: 0, 49: 0, 50: 0, 51: 0,
+                       52: 0, 53: 0, 54: 0, 55: 0, 56: 0, 57: 0, 58: 0, 59: 0, 60: 0, 61: 0, 62: 0, 63: 0}
         self.set_params(d, (result_keys, result_d_white, result_d_black))
 
 
 class RandomTestTwo(unittest.TestCase, BaseMaskingTest):
     def setUp(self):
         d = generate_dict(2)
-        result_keys = int(generate_result_keys(d), 2)
+        result_keys = generate_result_usage(d)
         self.set_params(d, (result_keys, generate_result(d, WHITE), generate_result(d, BLACK)))
 
 
 class RandomTestFour(unittest.TestCase, BaseMaskingTest):
     def setUp(self):
         d = generate_dict(4)
-        result_keys = int(generate_result_keys(d), 2)
+        result_keys = generate_result_usage(d)
         self.set_params(d, (result_keys, generate_result(d, WHITE), generate_result(d, BLACK)))
 
 

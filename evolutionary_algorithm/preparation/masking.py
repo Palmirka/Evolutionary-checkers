@@ -1,33 +1,33 @@
-MAX = 2 ** 64 - 1
-
-
 def binary_of_keys(dict, color):
     """
-        Change representation of data to binary. Each volume in
+        Change representation of data to binary
 
         :param dict dict: Original data in dictionary representation
         :param int color: Player color
-        :return[0]:       binary mask representing starting points of each key in result_value
+        :return[0]:       directory of binary masks, each record includes single field. 1 is set when field is used in
+                          certain combination
         :return[1]:       directory of binary masks, each record includes single field. 1 is set when combinations
                           includes player color pawn on this field
-        :rtype[0]:        int
+        :rtype[0]:        {int : int} dict
         :rtype[1]:        {int : int} dict
     """
 
-    result_key = 0
+    result_usage = {idx: 0 for idx in range(64)}
     result_value = {idx: 0 for idx in range(64)}
     dict = {key: value for key, value in dict.items() if value}
     for key in dict.keys():
         combinations = len(dict[key])
         if combinations:
-            result_key = (result_key + 1) << combinations + 1
             for idx in result_value.keys():
                 result_value[idx] <<= combinations
+                result_usage[idx] <<= combinations
+                mask_key = 2 ** combinations - 1
                 if idx in key:
-                    mask = 0
+                    mask_value = 0
+                    result_usage[idx] += mask_key
                     for c in dict[key]:
-                        mask <<= 1
+                        mask_value <<= 1
                         if c[key.index(idx)] == color:
-                            mask += 1
-                    result_value[idx] += mask
-    return result_key >> 1, result_value
+                            mask_value += 1
+                    result_value[idx] += mask_value
+    return result_usage, result_value
