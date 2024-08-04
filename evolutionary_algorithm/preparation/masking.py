@@ -1,3 +1,6 @@
+from game.constants import BOARD_SIZE
+
+
 def binary_of_keys(dict, color):
     """
         Change representation of data to binary
@@ -15,19 +18,18 @@ def binary_of_keys(dict, color):
     result_usage = {idx: 0 for idx in range(64)}
     result_value = {idx: 0 for idx in range(64)}
     dict = {key: value for key, value in dict.items() if value}
-    for key in dict.keys():
-        combinations = len(dict[key])
-        if combinations:
-            for idx in result_value.keys():
-                result_value[idx] <<= combinations
-                result_usage[idx] <<= combinations
-                mask_key = 2 ** combinations - 1
-                if idx in key:
-                    mask_value = 0
-                    result_usage[idx] += mask_key
-                    for c in dict[key]:
-                        mask_value <<= 1
-                        if c[key.index(idx)] == color:
-                            mask_value += 1
-                    result_value[idx] += mask_value
+
+    for key, combinations in dict.items():
+        combinations_len = len(combinations)
+        mask_usage = (1 << combinations_len) - 1
+        if not combinations:
+            continue
+        for idx in range(BOARD_SIZE):
+            result_usage[idx] <<= combinations_len
+            mask_value = 0
+            if idx in key:
+                result_usage[idx] += mask_usage
+                for c in combinations:
+                    mask_value = (mask_value << 1) + (1 if c[key.index(idx)] == color else 0)
+            result_value[idx] = (result_value[idx] << combinations_len) + mask_value
     return result_usage, result_value
