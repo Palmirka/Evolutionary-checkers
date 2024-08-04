@@ -4,6 +4,8 @@ WHITE = 1
 BLACK = 2
 UNKNOWN = 3
 
+BOARD_SIZE = 64
+
 fields_in_use = [0, 2, 4, 6,
                  9, 11, 13, 15,
                  16, 18, 20, 22,
