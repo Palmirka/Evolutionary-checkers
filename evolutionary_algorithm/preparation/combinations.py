@@ -1,5 +1,5 @@
 import numpy as np
-from game.constants import NOT_USED, EMPTY, WHITE, BLACK, UNKNOWN, fields_in_use
+from game.constants import NOT_USED, EMPTY, WHITE, BLACK, fields_in_use
 
 board_size = 8
 game_board = np.empty(board_size*board_size)
@@ -11,11 +11,11 @@ MAX_PAWNS = 7
 
 class _Combinations:
     """Base class for generating all possible subboard outcomes"""
-    def __init__(self, size, values):
+    def __init__(self, size, val):
         self.size = size
         self.count = board_size - self.size + 1
         self.subboards = self.get_subboards()
-        self.values = values
+        self.values = val
         self.result = {}
 
     def get_single(self, start):
@@ -57,17 +57,17 @@ class _Combinations:
 
 class Twos(_Combinations):
     def __init__(self):
-        super().__init__(size=2, values=values)
+        super().__init__(size=2, val=values)
 
 
 class Threes(_Combinations):
     def __init__(self):
-        super().__init__(size=3, values=values)
+        super().__init__(size=3, val=values)
 
 
 class Fourths(_Combinations):
     def __init__(self):
-        super().__init__(size=4, values=values)
+        super().__init__(size=4, val=values)
 
     def filter_function(self, x):
         return MIN_PAWNS <= self.size * self.size * 0.5 - x.count(EMPTY) <= MAX_PAWNS
