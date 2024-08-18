@@ -93,6 +93,24 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(move.type, 1)
         self.assertEqual(engine.move_turn, 4)
         
+    def test_copy(self):
+        engine = module.Engine()
+        engine.reset()
+        moves = [module.Move(16,25,0), module.Move(18,25,0),module.Move(18,27,0), module.Move(20,27,0),module.Move(20,29,0),module.Move(22,29,0),module.Move(22,31,0)]
+        for move1,move2 in zip(engine.legal_moves(), moves):
+            self.assertEqual(getattr(move1, "from"), getattr(move2, "from"))
+            self.assertEqual(move1.to,   move2.to)
+            self.assertEqual(move1.type, move2.type)
+        engine.act(moves[6])
+        engine.act(engine.legal_moves()[2])
+        engine.act(engine.legal_moves()[0])
+        engine.act(engine.legal_moves()[4])
+        move = engine.legal_moves()[0]
+
+        copied_engine = module.Engine(engine)
+        self.assertEqual(copied_engine.move_turn, engine.move_turn)
+        self.assertEqual(copied_engine.turn, engine.turn)
+
 class TestMiniMax(unittest.TestCase):
     def test_init(self):
         try:
