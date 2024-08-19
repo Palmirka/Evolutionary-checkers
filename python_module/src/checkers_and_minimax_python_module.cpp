@@ -61,6 +61,13 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         .def("size", &MoveList::size)
         .def("clear", &MoveList::clear);
 
+    py::class_<std::vector<MoveList>>(m, "MoveLists")
+        .def(py::init<>())
+        .def(py::init<const std::vector<MoveList>&>())
+        .def("append", (void (std::vector<MoveList>::*)(const MoveList&)) &std::vector<MoveList>::push_back)
+        .def("size", &MoveList::size)
+        .def("clear", &MoveList::clear);
+
 
     py::class_<Engine>(m, "Engine")
         .def(py::init<>())
@@ -69,8 +76,12 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         .def_readwrite("move_turn", &Engine::move_turn)
         .def("reset", &Engine::reset)
         .def("act", py::overload_cast<Move>(&Engine::act))
+        .def("act", py::overload_cast<MoveList>(&Engine::act))
         .def("print", &Engine::print)
         .def("legal_moves", &Engine::legal_moves)
+        .def("legal_moves_lists", &Engine::legal_moves_lists,
+                    py::arg("e"),
+                    py::arg("ml") = MoveList())  // Ustawienie domyślnego argumentu)
         .def("legal_captures", &Engine::legal_captures)
         .def("isFinished", &Engine::isFinished)
         .def("white_pieces", &Engine::white_pieces)
