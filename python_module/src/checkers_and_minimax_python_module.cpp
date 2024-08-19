@@ -64,6 +64,7 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
 
     py::class_<Engine>(m, "Engine")
         .def(py::init<>())
+        .def(py::init<const Engine&>())
         .def_readwrite("turn", &Engine::turn)
         .def_readwrite("move_turn", &Engine::move_turn)
         .def("reset", &Engine::reset)
