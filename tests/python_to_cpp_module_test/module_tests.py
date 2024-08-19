@@ -92,6 +92,12 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(move.to,   45)
         self.assertEqual(move.type, 1)
         self.assertEqual(engine.move_turn, 4)
+
+    def test_start_moves_sequences(self):
+        engine = module.Engine()
+        engine.reset()
+        for i in range(10):
+            engine.act(random.choice( engine.legal_moves_lists(engine)))
         
     def test_copy(self):
         engine = module.Engine()
