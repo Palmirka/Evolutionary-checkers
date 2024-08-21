@@ -27,21 +27,20 @@ def read_file(file_path, range_to_delete):
 
 
 
-file_path_4x4 = "boards_analyse_4x4_32897_games.txt"
-file_path_3x3 = "boards_analyse_3x3_32897_games.txt"
-file_path_2x2 = "boards_analyse_2x2_32897_games.txt"
+file_path_4x4 = "boards_analyse_4x4_32897_games_with_kings.txt"
+file_path_3x3 = "boards_analyse_3x3_32897_games_with_kings.txt"
+file_path_2x2 = "boards_analyse_2x2_32897_games_with_kings.txt"
     
     
-dict_2x2 = read_file(file_path_2x2, 0)
-dict_3x3 = read_file(file_path_3x3, 2048)
-dict_4x4 = read_file(file_path_4x4, 4096)
+dict_2x2 = read_file(file_path_2x2, 10)
+dict_3x3 = read_file(file_path_3x3, 150)
+dict_4x4 = read_file(file_path_4x4, 200)
 
 print("Slownik: ")
 # print(dict_2x2[0])
 print("Wczytanych wartości 2x2: ", dict_2x2[1])
 print("Wczytanych wartości 3x3: ", dict_3x3[1])
 print("Wczytanych wartości 4x4: ", dict_4x4[1])
-
 
 with open(file_path_2x2[:-4] + '_cut.txt', 'wb') as handle:
   pickle.dump(dict_2x2[0], handle)

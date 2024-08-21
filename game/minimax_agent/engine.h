@@ -55,6 +55,9 @@ public:
     bool operator==(const Engine& p) const;
     static Bitboard get_captured_position(Move move);
 
+    std::vector<uint64_t> serialize_state() const;
+    void deserialize_state(const std::vector<uint64_t>& state);
+
     Bitboard    pieces[BOTH] = {};
     Bitboard    kings = 0;
     Color       turn = BOTH;

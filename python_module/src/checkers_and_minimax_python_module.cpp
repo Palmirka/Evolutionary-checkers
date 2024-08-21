@@ -81,7 +81,7 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         .def("legal_moves", &Engine::legal_moves)
         .def("legal_moves_lists", &Engine::legal_moves_lists,
                     py::arg("e"),
-                    py::arg("ml") = MoveList())  // Ustawienie domyślnego argumentu)
+                    py::arg("ml") = MoveList())
         .def("legal_captures", &Engine::legal_captures)
         .def("isFinished", &Engine::isFinished)
         .def("white_pieces", &Engine::white_pieces)
@@ -94,6 +94,16 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         // .def("count_pawns", &Engine::count_pawns)
         // .def_readwrite("turn", &Engine::turn)
         // .def("clone", &Engine::clone)
+        .def("__getstate__", [](const Engine &e) {
+            return py::make_tuple(e.serialize_state());
+        })
+        .def("__setstate__", [](Engine &e, py::tuple t) {
+            if (t.size() != 1)
+                throw std::runtime_error("Invalid state!");
+            new (&e) Engine(); 
+            auto state = t[0].cast<std::vector<uint64_t>>();
+            e.deserialize_state(state);
+        })
         ;
 
     py::class_<Minimax>(m, "Minimax")

@@ -10,7 +10,14 @@ import os
 from tqdm import tqdm 
 from typing import Set
 
-path_to_pdn_directory = "..\\dataset_downloader\\games"
+WHITE = 2
+BLACK = 1
+WHITE_KING = 3
+BLACK_KING = 4
+
+
+
+path_to_pdn_directory = "../dataset_downloader/games"
 
 GLOBAL_DICT = {}
 GLOBAL_DICT_2x2 = {}
@@ -46,71 +53,71 @@ def get_sequence(move, moves):
 
 def make_all_combinations_first():
     dict = {}
-    for a in range(0,3):
-        for b in range(0,3):
-            for c in range(0,3):
-                for d in range(0,3):
-                    for e in range(0,3):
-                        for f in range(0,3):
-                            for g in range(0,3):
-                                for h in range(0,3):
+    for a in range(0,5):
+        for b in range(0,5):
+            for c in range(0,5):
+                for d in range(0,5):
+                    for e in range(0,5):
+                        for f in range(0,5):
+                            for g in range(0,5):
+                                for h in range(0,5):
                                     dict.update({(a,-1,b,-1, -1,c,-1,d, e,-1,f,-1, -1,g,-1,h):0})
     return dict
 
 def make_all_combinations_second():
     dict = {}
-    for a in range(0,3):
-        for b in range(0,3):
-            for c in range(0,3):
-                for d in range(0,3):
-                    for e in range(0,3):
-                        for f in range(0,3):
-                            for g in range(0,3):
-                                for h in range(0,3):
+    for a in range(0,5):
+        for b in range(0,5):
+            for c in range(0,5):
+                for d in range(0,5):
+                    for e in range(0,5):
+                        for f in range(0,5):
+                            for g in range(0,5):
+                                for h in range(0,5):
                                     dict.update({(-1,a,-1,b, c,-1,d,-1, -1,e,-1,f, g,-1,h,-1):0})
     return dict                                   
     
 def make_all_combinations_first_2x2():
     dict = {}
-    for a in range(0,3):
-        for b in range(0,3):
-            for c in range(0,3):
-                for d in range(0,3):
-                    for e in range(0,3):
+    for a in range(0,5):
+        for b in range(0,5):
+            for c in range(0,5):
+                for d in range(0,5):
+                    for e in range(0,5):
                         dict.update({(a,-1,b, -1,c,-1, d,-1,e):0})
     return dict
 
 def make_all_combinations_first_3x3():
     dict = {}
-    for a in range(0,3):
-        for b in range(0,3):
-            for c in range(0,3):
-                for d in range(0,3):
-                    for e in range(0,3):
+    for a in range(0,5):
+        for b in range(0,5):
+            for c in range(0,5):
+                for d in range(0,5):
+                    for e in range(0,5):
                         dict.update({(a,-1,b, -1,c,-1, d,-1,e):0})
     return dict
 
 def make_all_combinations_second_3x3():
     dict = {}
-    for a in range(0,3):
-        for b in range(0,3):
-            for c in range(0,3):
-                for d in range(0,3):
-                    for e in range(0,3):
+    for a in range(0,5):
+        for b in range(0,5):
+            for c in range(0,5):
+                for d in range(0,5):
+                    for e in range(0,5):
                         dict.update({(-1,a,-1, b,-1,c, -1,e,-1):0})
     return dict                                  
 
 def make_all_combinations_first_2x2():
     dict = {}
-    for a in range(0,3):
-        for b in range(0,3):
+    for a in range(0,5):
+        for b in range(0,5):
                         dict.update({(a,-1, -1,b):0})
     return dict 
 
 def make_all_combinations_second_2x2():
     dict = {}
-    for a in range(0,3):
-        for b in range(0,3):
+    for a in range(0,5):
+        for b in range(0,5):
                         dict.update({(-1,a, b,-1):0})
     return dict 
 
@@ -157,53 +164,32 @@ def fill_dict(game):
     searcher = game.board.searcher
     def fd(id):
         pos = notation_board_checkers[id]
+        piece = position_pieces.get(pos)
         if pos == -1:
             return -1
-        elif(position_pieces.get(pos) is not None):
-            return position_pieces.get(pos).player
+        elif(piece is not None):
+            if piece.king is False:
+                return piece.player
+            elif piece.player is WHITE:
+                return WHITE_KING
+            else:
+                return BLACK_KING
         else:
             return 0
-    def isKing(l):
-        for pos in l:
-            # piece = searcher.get_piece_by_position(notation_board_checkers[pos])
-            piece = position_pieces.get(notation_board_checkers[pos])
-            if piece is not None and piece.king == True:
-                if pos//8 == 0 and piece.player == 1: #promocja czarnych
-                    return True
-                if pos//8 == 7 and piece.player == 2: #promocja bialych
-                    return True
-        return False
+
     for k in range(0,7):
         for i in range(k*8,(k*8)+7):
             if k<5 and i<(k*8)+5:
                 key   = (i,i+1,i+2,i+3, i+8,i+8+1,i+8+2,i+8+3, i+16,i+16+1,i+16+2,i+16+3, i+24,i+24+1,i+24+2,i+24+3)
                 value = (fd(i),fd(i+1),fd(i+2),fd(i+3), fd(i+8),fd(i+8+1),fd(i+8+2),fd(i+8+3), fd(i+16),fd(i+16+1),fd(i+16+2),fd(i+16+3), fd(i+24),fd(i+24+1),fd(i+24+2),fd(i+24+3))
                 GLOBAL_DICT[key][value] += 1
-                if k == 4 and isKing([i+24,i+24+1,i+24+2,i+24+3]):
-                    # print("4x4: ", i)
-                    GLOBAL_DICT[key][value] += 1000
-                if k == 0 and isKing([i,i+1,i+2,i+3]):
-                    # print("4x4: ", i)
-                    GLOBAL_DICT[key][value] += 1000
             if k<6 and i<(k*8)+6:
                 key3x3   = (i,i+1,i+2, i+8,i+8+1,i+8+2, i+16,i+16+1,i+16+2)
                 value3x3 = (fd(i),fd(i+1),fd(i+2), fd(i+8),fd(i+8+1),fd(i+8+2), fd(i+16),fd(i+16+1),fd(i+16+2))
                 GLOBAL_DICT_3x3[key3x3][value3x3] += 1
-                if k == 5 and isKing([i+16,i+16+1,i+16+2]):
-                    # print("3x3: ", i)
-                    GLOBAL_DICT_3x3[key3x3][value3x3] += 1000
-                if k == 0 and isKing([i,i+1,i+2]):
-                    # print("3x3: ", i)
-                    GLOBAL_DICT_3x3[key3x3][value3x3] += 1000
             key2x2   = (i,i+1, i+8,i+8+1)
             value2x2 = (fd(i),fd(i+1), fd(i+8),fd(i+8+1))
             GLOBAL_DICT_2x2[key2x2][value2x2] += 1
-            if k == 6 and isKing([i+8,i+8+1]):
-                # print("2x2: ", i)
-                GLOBAL_DICT_2x2[key2x2][value2x2] += 1000
-            if k == 0 and isKing([i,i+1]):
-                # print("2x2: ", i)
-                GLOBAL_DICT_2x2[key2x2][value2x2] += 1000
     #return [[key,value], [key3x3, value3x3], [key2x2, value2x2]]
             
   
@@ -230,48 +216,41 @@ for pdn_file,i in zip(pdn_files, tqdm (range(files_counter), desc="Loading…", 
             VISITED.add(link)
         moves = game1.moves
         game = Game(variant='brazilian', fen=fen)
-        fill_dict(game)
+        first_king_flag = False
         for m in moves:
-            promotion_in_that_move = False
             try:
                 _move = flatmove(m)
                 piece_to_move = game.board.searcher.get_piece_by_position(_move[0][0])
                 is_king_to_move = piece_to_move.king
                 if is_king_to_move == True: # ruch damką
-                    break
+                    first_king_flag = True
                 game.push(get_sequence(_move, game.legal_moves()))
-            #     piece_after_move = game.board.searcher.get_piece_by_position(move[-1][-1])
-            #     is_king_after_move = piece_after_move.king
-            #     if is_king_after_move == True and is_king_to_move == False: # promocja na damke
-            #         promotion_in_that_move = True
             except:
                 pass
-            # keys = fill_dict(game)
-            # if promotion_in_that_move == True:
-            #     GLOBAL_DICT[keys[0]][keys[1]] += 1000
-            fill_dict(game)
+            if first_king_flag:
+                fill_dict(game)
         counter += 1
         if counter%1000 == 0:
-            with open('boards_analyse_' + str(counter) + '_games.txt', 'wb') as handle:
+            with open('boards_analyse_' + str(counter) + '_games_with_kings.txt', 'wb') as handle:
                 pickle.dump(GLOBAL_DICT, handle)
 
-with open('boards_analyse_4x4_' + str(counter) + '_games.txt', 'wb') as handle:
+with open('boards_analyse_4x4_' + str(counter) + '_games_with_kings.txt', 'wb') as handle:
   pickle.dump(GLOBAL_DICT, handle)
   
-with open('boards_analyse_3x3_' + str(counter) + '_games.txt', 'wb') as handle:
+with open('boards_analyse_3x3_' + str(counter) + '_games_with_kings.txt', 'wb') as handle:
   pickle.dump(GLOBAL_DICT_3x3, handle)
   
-with open('boards_analyse_2x2_' + str(counter) + '_games.txt', 'wb') as handle:
+with open('boards_analyse_2x2_' + str(counter) + '_games_with_kings.txt', 'wb') as handle:
   pickle.dump(GLOBAL_DICT_2x2, handle)
 
 
 
-# with open('file.txt', 'rb') as handle:
+# with open('boards_analyse_2x2_1_games_with_kings.txt', 'rb') as handle:
 #     b = pickle.loads(handle.read())
     
 # for key1 in b.keys():
 #     for key2 in b[key1].keys():
-#         if b[key1][key2] >= 20 :
+#         if b[key1][key2] >= 1 :
 #                 print(str(key1) + " " + str(key2) + ":" + str(b[key1][key2]))
 
 

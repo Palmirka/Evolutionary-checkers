@@ -521,8 +521,9 @@ Engine& Engine::operator=(const Engine& other) {
             this->pieces[BLACK] = other.pieces[BLACK];
             this->pieces[BOTH] = other.pieces[BOTH];
             this->kings = other.kings;
-            this->turn   = other.turn;
+            this->turn  = other.turn;
             this->move_turn = other.move_turn;
+            this->continue_from = other.continue_from;
         }
         return *this;
     }
@@ -668,3 +669,24 @@ Bitboard Engine::white_pieces(){ return pieces[WHITE] & ~kings; }
 Bitboard Engine::black_pieces(){ return pieces[BLACK] & ~kings; }
 Bitboard Engine::white_kings() { return pieces[WHITE] & kings; }
 Bitboard Engine::black_kings() { return pieces[BLACK] & kings; }
+
+std::vector<uint64_t> Engine::serialize_state() const {
+    std::vector<uint64_t> state;
+    state.push_back(pieces[WHITE]);
+    state.push_back(pieces[BLACK]);
+    state.push_back(kings);
+    state.push_back(static_cast<uint64_t>(turn));
+    state.push_back(static_cast<uint64_t>(move_turn));
+    state.push_back(static_cast<uint64_t>(continue_from));
+    return state;
+}
+
+void Engine::deserialize_state(const std::vector<uint64_t>& state) {
+    if (state.size() < 6) throw std::runtime_error("Invalid state data!");
+    pieces[WHITE] = state[0];
+    pieces[BLACK] = state[1];
+    kings = state[2];
+    turn = static_cast<Color>(state[3]);
+    move_turn = static_cast<int>(state[4]);
+    continue_from = static_cast<Square>(state[5]);
+}
