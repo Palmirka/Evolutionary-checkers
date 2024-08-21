@@ -33,9 +33,21 @@ file_path_2x2 = "boards_analyse_2x2_32897_games.txt"
     
     
 dict_2x2 = read_file(file_path_2x2, 0)
-dict_3x3 = read_file(file_path_3x3, 1024)
+dict_3x3 = read_file(file_path_3x3, 2048)
 dict_4x4 = read_file(file_path_4x4, 4096)
 
-# print("Slownik: ")
+print("Slownik: ")
 # print(dict_2x2[0])
-print("Wczytanych wartości: ", dict_4x4[1])
+print("Wczytanych wartości 2x2: ", dict_2x2[1])
+print("Wczytanych wartości 3x3: ", dict_3x3[1])
+print("Wczytanych wartości 4x4: ", dict_4x4[1])
+
+
+with open(file_path_2x2[:-4] + '_cut.txt', 'wb') as handle:
+  pickle.dump(dict_2x2[0], handle)
+
+with open(file_path_3x3[:-4] + '_cut.txt', 'wb') as handle:
+  pickle.dump(dict_3x3[0], handle)
+
+with open(file_path_4x4[:-4] + '_cut.txt', 'wb') as handle:
+  pickle.dump(dict_4x4[0], handle)
