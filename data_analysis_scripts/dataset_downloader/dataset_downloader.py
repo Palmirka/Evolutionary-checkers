@@ -64,7 +64,7 @@ for username,i in zip(players, tqdm (range (len(players)), desc="Loading…",  a
         #             if line.strip():
         #                 f.write(line + '\n')
         try:
-            with open("games\\"+username+".pdn", 'wb')as file:
+            with open("games/"+username+".pdn", 'wb')as file:
                 file.write(response.content)
         except:
             print("Błąd wczytania jednej partii gracza: " + username)
