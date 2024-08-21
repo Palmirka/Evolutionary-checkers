@@ -94,16 +94,8 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         // .def("count_pawns", &Engine::count_pawns)
         // .def_readwrite("turn", &Engine::turn)
         // .def("clone", &Engine::clone)
-        .def("__getstate__", [](const Engine &e) {
-            return py::make_tuple(e.serialize_state());
-        })
-        .def("__setstate__", [](Engine &e, py::tuple t) {
-            if (t.size() != 1)
-                throw std::runtime_error("Invalid state!");
-            new (&e) Engine(); 
-            auto state = t[0].cast<std::vector<uint64_t>>();
-            e.deserialize_state(state);
-        })
+        .def("__getstate__", &Engine::__getstate__)
+        .def("__setstate__", &Engine::__setstate__)
         ;
 
     py::class_<Minimax>(m, "Minimax")

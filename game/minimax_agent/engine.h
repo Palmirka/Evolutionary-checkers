@@ -3,6 +3,8 @@
 
 #include "misc.h"
 #include <vector>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 using MoveList   = std::vector<Move>;
 using MoveLists  = std::vector<MoveList>;
@@ -55,8 +57,8 @@ public:
     bool operator==(const Engine& p) const;
     static Bitboard get_captured_position(Move move);
 
-    std::vector<uint64_t> serialize_state() const;
-    void deserialize_state(const std::vector<uint64_t>& state);
+    pybind11::dict __getstate__() const;
+    void __setstate__(pybind11::dict state);
 
     Bitboard    pieces[BOTH] = {};
     Bitboard    kings = 0;

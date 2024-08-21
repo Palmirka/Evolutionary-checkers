@@ -4,8 +4,10 @@
 #include <iostream>
 #include <algorithm>
 #include <iterator>
-
 #include <bitset>
+#include <pybind11/pytypes.h>
+#include <pybind11/numpy.h>  
+#include <array> 
 
 void Engine::print()
 {
@@ -670,23 +672,24 @@ Bitboard Engine::black_pieces(){ return pieces[BLACK] & ~kings; }
 Bitboard Engine::white_kings() { return pieces[WHITE] & kings; }
 Bitboard Engine::black_kings() { return pieces[BLACK] & kings; }
 
-std::vector<uint64_t> Engine::serialize_state() const {
-    std::vector<uint64_t> state;
-    state.push_back(pieces[WHITE]);
-    state.push_back(pieces[BLACK]);
-    state.push_back(kings);
-    state.push_back(static_cast<uint64_t>(turn));
-    state.push_back(static_cast<uint64_t>(move_turn));
-    state.push_back(static_cast<uint64_t>(continue_from));
+pybind11::dict Engine::__getstate__() const {
+    pybind11::dict state;
+    state["pieces"] = pybind11::array_t<Bitboard>(
+        {2},  
+        pieces 
+    );  
+    state["kings"] = kings;
+    state["turn"] = turn;
+    state["move_turn"] = move_turn;
+    state["continue_from"] = continue_from;
     return state;
 }
 
-void Engine::deserialize_state(const std::vector<uint64_t>& state) {
-    if (state.size() < 6) throw std::runtime_error("Invalid state data!");
-    pieces[WHITE] = state[0];
-    pieces[BLACK] = state[1];
-    kings = state[2];
-    turn = static_cast<Color>(state[3]);
-    move_turn = static_cast<int>(state[4]);
-    continue_from = static_cast<Square>(state[5]);
+void Engine::__setstate__(pybind11::dict state) {
+    auto pieces_array = state["pieces"].cast<pybind11::array_t<Bitboard>>();
+    std::copy(pieces_array.data(), pieces_array.data() + 2, pieces);
+    kings = state["kings"].cast<Bitboard>();
+    turn = state["turn"].cast<Color>();
+    move_turn = state["move_turn"].cast<int>();
+    continue_from = state["continue_from"].cast<Square>();
 }
