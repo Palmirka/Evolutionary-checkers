@@ -1,26 +1,23 @@
 import random
-from typing import Tuple
-from checkers.game import Game
-from move_strategies.minimax import alpha_beta_minimax
+from checkers_and_minimax_python_module import Engine, Minimax, Color
 
 
 class MoveStrategy:
     """Tested strategies against our AI"""
 
-    def __init__(self, game: Game):
-        """Initialize move parameters"""
-        self.game = game
-
-    def first_in_row(self) -> Tuple[int, int]:
+    @staticmethod
+    def first_in_row(game: Engine, **kwargs):
         """Take first found move"""
-        return self.game.get_possible_moves()[0]
+        return game.legal_moves_lists(game)[0]
 
-    def random(self) -> Tuple[int, int]:
+    @staticmethod
+    def random(game: Engine, **kwargs):
         """Take random move"""
-        moves = self.game.get_possible_moves()
+        moves = game.legal_moves_lists(game)
         return moves[random.randint(0, len(moves) - 1)]
 
-    def minimax(self, depth: int) -> Tuple[int, int]:
-        """Recursively look for best move to given depth"""
-        minimax = alpha_beta_minimax(depth)
-        return minimax(self.game)
+    @staticmethod
+    def minimax(game: Engine, **kwargs):
+        minimax = Minimax()
+        print(kwargs)
+        return minimax.minimax_move(game, kwargs.get('depth', 2), Color.BLACK)

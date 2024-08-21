@@ -1,26 +1,36 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from joblib import Parallel, delayed
-from checkers.game import Game
+import multiprocessing as mp
+from checkers_and_minimax_python_module import Engine, MoveList
 from move_strategies.strategies import MoveStrategy
-from game.constants import titles
 from game.play import Play
-from typing import Callable, Tuple
+from game.constants import MAX_POINTS
+from typing import Callable, Dict
+import time
 
+
+# def evaluate_individual(args):
+#     idx, coefficient, engine, objective_function, opponent_strategy, population_size = args
+#     play_instance = Play(engine, coefficient, objective_function, opponent_strategy)
+#     return idx, np.mean([play_instance.play() for _ in range(population_size)])
 
 class Evolutionary:
-    def __init__(self, objective_function: Callable[[Game, np.ndarray], float], population_size: int,
-                 descendant_size: int, opponent_strategy: Callable[[MoveStrategy], Tuple[int, int]], iters: int, n: int,
-                 individual_length=12):
+    def __init__(self, objective, population_size: int, descendant_size: int,
+                 opponent_strategy: Callable[[MoveStrategy], MoveList], iters: int, n: int, **strategy_args):
         """Initialize evolutionary and diagram parameters"""
+        self.pool = np.array([Engine() for _ in range(population_size)])
+        # self.engine = Engine()
         self.mean = None
         self.deviation = None
         self.opponent_strategy = opponent_strategy
-        self.objective_function = objective_function
-        self.coefficients = np.empty((population_size, individual_length))
+        self.strategy_args = strategy_args
+        self.objective_function = objective.function
+        self.coefficients = np.empty((population_size, objective.size), float)
         self.population_size = population_size
         self.descendant_size = descendant_size
-        self.individual_length = individual_length
+        self.individual_length = objective.size
         self.iters = iters
         self.n = n
 
@@ -37,9 +47,11 @@ class Evolutionary:
 
     def random_coefficients(self) -> np.ndarray:
         """Generate coefficients with normal distribution"""
+
         def random_coefficient():
             coefficient = [np.random.normal(self.mean[i], self.deviation[i]) for i in range(self.individual_length)]
             return np.array(coefficient)
+
         return np.array([random_coefficient() for _ in range(self.population_size)])
 
     def model_estimation(self, coefficients):
@@ -47,20 +59,57 @@ class Evolutionary:
         pass
 
     def evaluate(self, i: int, x: int) -> np.ndarray:
+        # start_time = time.time()
         """Get and save new fitness values"""
-        def evaluate_individual(idx, coefficient):
-            return idx, np.sum(np.array(
-                [Play(Game(), coefficient, self.objective_function, self.opponent_strategy).play() for _ in
-                 range(self.population_size)]))
 
+        def evaluate_individual(idx, coefficients):
+            return idx, Play(self.pool[idx], coefficients, self.objective_function, self.opponent_strategy).play(idx, **self.strategy_args)
+
+
+        # values = np.zeros(self.population_size)
+        #
+        # # Create a Queue to collect results
+        # result_queue = mp.Queue()
+        # processes = []
+        #
+        # # Start processes
+        # for idx, coefficient in enumerate(self.coefficients):
+        #     mp.set_start_method('fork')
+        #     p = mp.Process(target=evaluate_individual, args=(idx, coefficient, result_queue))
+        #     p.start()
+        #     processes.append(p)
+        #
+        # # Wait for all processes to finish
+        # for p in processes:
+        #     p.join()
+        #
+        # # Collect results
         values = np.zeros(self.population_size)
-        results = Parallel(n_jobs=-1)(
-            delayed(evaluate_individual)(idx, coefficient) for idx, coefficient in enumerate(self.coefficients))
-        for idx, value in results:
-            values[idx] = value
+        # while not result_queue.empty():
+        #     idx, value = result_queue.get()
+        #     values[idx] = value
+
+        for idx, coefficient in enumerate(self.coefficients):
+            _, values[idx] = evaluate_individual(idx, coefficient)
+
+        # with ThreadPoolExecutor(max_workers=self.population_size) as executor:
+        #     futures = [executor.submit(evaluate_individual, idx, coefficient)
+        #                for idx, coefficient in enumerate(self.coefficients)]
+        #
+        #     for future in as_completed(futures):
+        #         idx, value = future.result()
+        #         values[idx] = value
+
+        # results = Parallel(n_jobs=-1, backend='threading')(
+        #     delayed(evaluate_individual)(idx, coefficient) for idx, coefficient in enumerate(self.coefficients))
+        # for idx, value in results:
+        #     values[idx] = value
+
         self.max_evaluations[x][i] = np.max(values)
         self.min_evaluations[x][i] = np.min(values)
         self.mean_evaluations[x][i] = np.mean(values)
+        # end_time = time.time()
+        # print('Evaluate time: ', end_time - start_time)
         return values
 
     def run(self, x) -> np.ndarray:
@@ -69,28 +118,40 @@ class Evolutionary:
 
     def run_n_times(self) -> np.ndarray:
         """Save results from n runs of function"""
+
+        # with ProcessPoolExecutor(max_workers=self.n) as executor:
+        #     futures = [executor.submit(lambda x=x: (x, self.run(x))) for x in range(self.n)]
+        #
+        #     for future in as_completed(futures):
+        #         x, result = future.result()
+        #         self.best_coefficients[x] = result
+
+        # def worker(x):
+        #     """Worker function for multiprocessing"""
+        #     return self.run(x)
+        #
+        # mp.set_start_method('fork', force=True)
+        # with mp.Pool(processes=self.n) as pool:
+        #     results = pool.map(worker, range(self.n))
+        #
+        # self.best_coefficients = np.array(results)
+
         for x in range(self.n):
             self.best_coefficients[x] = self.run(x)
-        return self.best_coefficients
 
-    def show_coefficients(self):
-        """Show evaluation of results"""
-        fig, axs = plt.subplots(3, 4, figsize=(12, 8))
-        axs = axs.flatten()
-        for i in range(self.best_coefficients.shape[1]):
-            axs[i].plot(np.arange(self.best_coefficients.shape[0]), self.best_coefficients[:, i])
-            axs[i].set_title(titles[i])
-        plt.tight_layout()
-        plt.show()
+        return self.best_coefficients
 
     def show(self):
         """Show evaluation of fitness function"""
         plt.figure()
         plt.title(self.__class__.__name__)
-        plt.plot([self.population_size] * (self.iters + 1), color='r')
-        plt.plot([-self.population_size] * (self.iters + 1), color='r')
+        plt.plot([MAX_POINTS] * (self.iters + 1), color='r')
+        plt.plot([- MAX_POINTS] * (self.iters + 1), color='r')
         plt.plot(np.mean(self.max_evaluations, axis=0), label='max_evaluation')
         plt.plot(np.mean(self.min_evaluations, axis=0), label='min_evaluation')
         plt.plot(np.mean(self.mean_evaluations, axis=0), label='mean_evaluation')
         plt.legend()
         plt.show()
+
+
+

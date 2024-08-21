@@ -1,51 +1,24 @@
 import numpy as np
-from checkers.game import Game
+from evolutionary_algorithm.preparation.combination_check import check_board
+from evolutionary_algorithm.preparation.masking import binary_of_keys
+from evolutionary_algorithm.preparation.reader import read_file
+from checkers_and_minimax_python_module import Engine
 
 
 class Objective:
-    @staticmethod
-    def function(game: Game, coefficients: np.ndarray) -> float:
+    def __init__(self):
+        self.dict = read_file("boards_analyse_2x2_32897_games.txt", 0)[0]
+        self.dict.update(read_file("boards_analyse_3x3_32897_games.txt", 2048)[0])
+        self.dict.update(read_file("boards_analyse_4x4_32897_games.txt", 4096)[0])
+        self.size, self.usage, self.values_white, self.values_black, self.values_w_king, self.values_b_king = binary_of_keys(self.dict)
+        print(self.size)
+
+    def function(self, game: Engine, coefficients: np.ndarray) -> float:
         """Fitness function that grades actual board state"""
-        # based on https://pages.mini.pw.edu.pl/~mandziukj/PRACE/es_init.pdf
-        board = game.board
 
-        def check(position, king=None, player=1):
-            piece = board.searcher.get_piece_by_position(position)
-            if piece:
-                return (king is None or piece.king == king) and piece.player == player
-            return False
-
-        def check_multiple(positions, king=None, player=1):
-            return np.array([check(position, king, player) for position in positions])
-
-        data_vector = np.ones(12, dtype=int)
-        # 0 - pawns
-        data_vector[0] = len(list(filter(lambda x: not x.king, board.searcher.player_pieces[1])))
-        # 1 - kings
-        data_vector[1] = len(board.searcher.player_pieces[1]) - data_vector[0]
-        # 2 - safe pawns
-        edges = [1, 2, 3, 4, 12, 20, 28, 32, 31, 30, 29, 21, 13, 5]
-        data_vector[2] = np.sum(check_multiple(edges))
-        # 3 - attacking pawns
-        data_vector[3] = len(set(map(lambda x: x[0], board.get_possible_capture_moves())))
-        # 4 - centrally positioned pawns
-        central = np.array([10, 11, 14, 15, 18, 19, 22, 23])
-        data_vector[4] = np.sum(check_multiple(central, False))
-        # 5 - centrally positioned kings
-        data_vector[5] = np.sum(check_multiple(central, True))
-        # 6 - king on double diagonal
-        double_diagonal = np.array([1, 5, 6, 9, 10, 14, 15, 18, 19, 23, 24, 27, 28, 32])
-        data_vector[5] = np.sum(check_multiple(double_diagonal, True))
-        # 7 - bridge patterns
-        data_vector[9] = int(check(1) and check(3))
-        # 8 - oreo patterns
-        data_vector[8] = int(check(2) and check(3) and check(7))
-        # 9 - triangle patterns
-        data_vector[9] = int(check(1) and check(2) and check(6))
-        # 10 - dog patterns
-        data_vector[10] = int(check(1) and check(5, player=2))
-        # 11 - king in corner patterns
-        data_vector[11] = int(check(29, True))
-        # print(data_vector)
-        values = coefficients * data_vector
-        return values.sum()
+        masks = bin(check_board(game.white_pieces(), game.black_pieces(), game.white_kings(), game.black_kings(),
+                                self.usage, self.values_white, self.values_black, self.values_w_king, self.values_b_king,
+                                self.size))[2:].zfill(self.size)
+        result = sum([c if masks[idx] == '1' else 0 for idx, c in enumerate(coefficients)])
+        # result = bin(game.white_pieces()).count('1') - bin(game.black_pieces()).count('1')
+        return result

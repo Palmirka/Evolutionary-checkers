@@ -1,17 +1,16 @@
 from evolutionary_algorithm.evolutionary import Evolutionary
 from move_strategies.strategies import MoveStrategy
-from typing import Callable, Tuple
-from checkers.game import Game
+from typing import Callable, Dict
 import numpy as np
+from evolutionary_algorithm.base_functions.objective import Objective
+from checkers_and_minimax_python_module import MoveList
 
 
 class UMDAc (Evolutionary):
-    def __init__(self, selection_function, objective_function: Callable[[Game, np.ndarray], float], population_size: int,
-                 descendant_size: int, opponent_strategy: Callable[[MoveStrategy], Tuple[int, int]], iters: int, n: int,
-                 individual_length=12):
+    def __init__(self, selection_function: Callable, objective: Objective, population_size: int, descendant_size: int,
+                 opponent_strategy: Callable[[MoveStrategy], MoveList], iters: int, n: int, **strategy_args):
         self.selection_function = selection_function
-        super().__init__(objective_function, population_size, descendant_size, opponent_strategy, iters, n,
-                         individual_length)
+        super().__init__(objective, population_size, descendant_size, opponent_strategy, iters, n, **strategy_args)
 
     def select(self, values):
         return self.selection_function(self.coefficients, values, self.descendant_size, 2)
@@ -23,7 +22,9 @@ class UMDAc (Evolutionary):
     def run(self, x):
         self.init()
         values = self.evaluate(0, x)
+        print(f'n {x}')
         for i in range(self.iters):
+            # print(f'n: {x}, iter: {i}')
             selected_coefficients = self.select(values)
             self.model_estimation(selected_coefficients)
             self.coefficients = self.random_coefficients()
