@@ -587,28 +587,28 @@ Bitboard Engine::black_pieces(){ return pieces[BLACK] & ~kings; }
 Bitboard Engine::white_kings() { return pieces[WHITE] & kings; }
 Bitboard Engine::black_kings() { return pieces[BLACK] & kings; }
 
-pybind11::dict Engine::__getstate__() const {
-    pybind11::dict state;
-    state["pieces"] = pybind11::array_t<Bitboard>(
-        {2},  
-        pieces 
-    );  
-    state["kings"] = kings;
-    state["turn"] = turn;
-    state["move_turn"] = move_turn;
-    state["continue_from"] = continue_from;
-    return state;
-}
+// pybind11::dict Engine::__getstate__() const {
+//     pybind11::dict state;
+//     state["pieces"] = pybind11::array_t<Bitboard>(
+//         {2},  
+//         pieces 
+//     );  
+//     state["kings"] = kings;
+//     state["turn"] = turn;
+//     state["move_turn"] = move_turn;
+//     state["continue_from"] = continue_from;
+//     return state;
+// }
 
-void Engine::__setstate__(pybind11::dict state) {
-    auto pieces_array = state["pieces"].cast<pybind11::array_t<Bitboard>>();
+// void Engine::__setstate__(pybind11::dict state) {
+//     auto pieces_array = state["pieces"].cast<pybind11::array_t<Bitboard>>();
     
-    for (size_t i = 0; i < 2; ++i) {
-        pieces[i] = pieces_array.at(i);
-    }
+//     for (size_t i = 0; i < 2; ++i) {
+//         pieces[i] = pieces_array.at(i);
+//     }
 
-    kings = state["kings"].cast<Bitboard>();
-    turn = state["turn"].cast<Color>();
-    move_turn = state["move_turn"].cast<int>();
-    continue_from = state["continue_from"].cast<Square>();
-}
+//     kings = state["kings"].cast<Bitboard>();
+//     turn = state["turn"].cast<Color>();
+//     move_turn = state["move_turn"].cast<int>();
+//     continue_from = state["continue_from"].cast<Square>();
+// }

@@ -1,5 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/pytypes.h>
+#include <pybind11/numpy.h>  
 
 #include "../../game/minimax_agent/engine.h"
 #include "../../game/minimax_agent/minimax.h"
@@ -88,8 +90,29 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         .def("black_pieces", &Engine::black_pieces)
         .def("white_kings", &Engine::white_kings)
         .def("black_kings", &Engine::black_kings)
-        .def("__getstate__", &Engine::__getstate__)
-        .def("__setstate__", &Engine::__setstate__)
+            .def(py::pickle(
+        [](const Engine &self) { // __getstate__
+            return py::make_tuple(
+                py::array_t<Bitboard>({2}, self.pieces),
+                self.kings,
+                self.turn,
+                self.move_turn,
+                self.continue_from
+            );
+        },
+        [](py::tuple t) { // __setstate__, no `self` parameter
+            auto pieces_array = t[0].cast<py::array_t<Bitboard>>();
+            auto engine = new Engine(); // Create a new instance
+
+            std::copy(pieces_array.data(), pieces_array.data() + 2, engine->pieces);
+            engine->kings = t[1].cast<Bitboard>();
+            engine->turn = t[2].cast<Color>();
+            engine->move_turn = t[3].cast<int>();
+            engine->continue_from = t[4].cast<Square>();
+
+            return engine; // Return the newly constructed object
+        }
+    ));
         ;
 
     py::class_<Minimax>(m, "Minimax")
