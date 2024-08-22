@@ -93,11 +93,11 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         ;
 
     py::class_<Minimax>(m, "Minimax")
-        .def(py::init<>())
+        .def(py::init<double>(), 
+            py::arg("temp") = 1.0)
         .def("minimax_move", &Minimax::minimax_move)
         ;
 }
-
 
 // compile command
 // g++.exe -shared -std=c++17 -fPIC -static-libgcc -static-libstdc++ -IC:\Users\Daniel\AppData\Local\Programs\Python\Python312\include -IC:\Users\Daniel\AppData\Local\Programs\Python\Python312\Lib\site-packages\pybind11\include -Wall -LC:\Users\Daniel\AppData\Local\Programs\Python\Python312\Lib -LC:\Users\Daniel\AppData\Local\Programs\Python\Python312\libs -LC:\Users\Daniel\AppData\Local\Programs\Python\Python312 checkers_and_minimax_python_module.cpp engine.cpp minimax.cpp -o checkers_and_minimax_python_module.cp312-win_amd64.pyd -lPython312
