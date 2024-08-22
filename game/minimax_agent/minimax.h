@@ -10,9 +10,6 @@ using MovePair = std::pair<Move, int>;
 using ListValPair = std::pair<int, int>;
 using SoftmaxPair = std::pair<std::vector<double>, std::vector<int>>;
 
-const double TEMPERATURE = 1.0;
-
-
 class HashEngine {
 public:
     size_t operator()(const Engine& p) const
@@ -35,11 +32,13 @@ class Minimax {
         Bitboard score3;
         Bitboard score4;
         std::vector<Bitboard> scores;
+        double TEMPERATURE = 1.0;
     public: 
         std::unordered_map< Engine, SoftmaxPair, HashEngine> hashmap_white;
         std::unordered_map< Engine, SoftmaxPair, HashEngine> hashmap_black;
-        Minimax() : randengine(std::random_device()())
+        Minimax(double temp = 1.0) : randengine(std::random_device()())
         {
+            TEMPERATURE = temp;
             center = bitboard(18)|bitboard(20)|bitboard(27)|bitboard(29)|bitboard(34)| bitboard(36)| bitboard(43)| bitboard(45);
             back_row_bridge_1 = bitboard(57) | bitboard(59);
             back_row_bridge_2 = bitboard(5) | bitboard(6);

@@ -602,7 +602,11 @@ pybind11::dict Engine::__getstate__() const {
 
 void Engine::__setstate__(pybind11::dict state) {
     auto pieces_array = state["pieces"].cast<pybind11::array_t<Bitboard>>();
-    std::copy(pieces_array.data(), pieces_array.data() + 2, pieces);
+    
+    for (size_t i = 0; i < 2; ++i) {
+        pieces[i] = pieces_array.at(i);
+    }
+
     kings = state["kings"].cast<Bitboard>();
     turn = state["turn"].cast<Color>();
     move_turn = state["move_turn"].cast<int>();
