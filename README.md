@@ -17,3 +17,7 @@ Sprawdź czy działa:
 python3 tests/module_tests.py 
 
 Ostatnie testy mogą nie przejść w związku z testami minimaxa a nie samego modułu (ale prezentują rozegranie przykłaowej gry i użycia wszystkich typów ENUM itp)
+
+Ręczna kompilacja z użyciem engine:
+g++ -Wall test.cpp -o test1 $(python3-config --includes) $(python3-config --ldflags) -lpython3.10
+

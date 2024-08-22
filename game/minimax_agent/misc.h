@@ -137,16 +137,10 @@ constexpr Bitboard set_king_captures_white(Bitboard num, Bitboard turn_bb) {
     else if(lsb1 & turn_bb)
         return 0;
     Bitboard numWithoutLsb = num & (num - 1);
-    Bitboard secondLsb = secondLsb = numWithoutLsb & -numWithoutLsb;;
+    Bitboard secondLsb = numWithoutLsb & -numWithoutLsb;;
     if (numWithoutLsb == 0)
         secondLsb = bitboard(63);     
 
-    // 0000010000000
-
-    // 0000001111111
-    // 0000000000000
-    // 0000001111111
-    // 0000010000000
     Bitboard mask = (lsb1 - 1) ^ (secondLsb - 1);
 
     return mask & ~lsb1;
@@ -167,7 +161,7 @@ constexpr Bitboard myMsb(Bitboard num)
     num |= num >> 32;
  
     num = ((num + 1) >> 1) |
-        (num & (1 << ((sizeof(num) * CHAR_BIT)-1)));
+        (num & (1ULL << ((sizeof(num) * CHAR_BIT)-1)));
     return num;
 }
 

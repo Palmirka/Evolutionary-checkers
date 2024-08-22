@@ -88,22 +88,16 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         .def("black_pieces", &Engine::black_pieces)
         .def("white_kings", &Engine::white_kings)
         .def("black_kings", &Engine::black_kings)
-        // .def("legal_king_capture_moves", &Engine::legal_king_capture_moves)
-        // .def("board", &Engine::board)
-        // .def("count_kings", &Engine::count_kings)
-        // .def("count_pawns", &Engine::count_pawns)
-        // .def_readwrite("turn", &Engine::turn)
-        // .def("clone", &Engine::clone)
         .def("__getstate__", &Engine::__getstate__)
         .def("__setstate__", &Engine::__setstate__)
         ;
 
     py::class_<Minimax>(m, "Minimax")
-        .def(py::init<>())
+        .def(py::init<double>(), 
+            py::arg("temp") = 1.0)
         .def("minimax_move", &Minimax::minimax_move)
         ;
 }
-
 
 // compile command
 // g++.exe -shared -std=c++17 -fPIC -static-libgcc -static-libstdc++ -IC:\Users\Daniel\AppData\Local\Programs\Python\Python312\include -IC:\Users\Daniel\AppData\Local\Programs\Python\Python312\Lib\site-packages\pybind11\include -Wall -LC:\Users\Daniel\AppData\Local\Programs\Python\Python312\Lib -LC:\Users\Daniel\AppData\Local\Programs\Python\Python312\libs -LC:\Users\Daniel\AppData\Local\Programs\Python\Python312 checkers_and_minimax_python_module.cpp engine.cpp minimax.cpp -o checkers_and_minimax_python_module.cp312-win_amd64.pyd -lPython312

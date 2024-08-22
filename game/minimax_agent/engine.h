@@ -1,10 +1,12 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include "misc.h"
-#include <vector>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
+#include "misc.h"
+#include <vector>
+
 
 using MoveList   = std::vector<Move>;
 using MoveLists  = std::vector<MoveList>;
@@ -28,9 +30,6 @@ public:
     MoveList    legal_captures() const;
     std::pair<MoveList, int> legal_king_capture_moves(int depth, Square continue_from_sq=64) const;
     Board       board() const;
-    // int         count_kings(Color player);
-    // int         count_pawns(Color player);
-
    
     Engine(const Engine& other);
     Engine();
@@ -38,7 +37,7 @@ public:
     Engine*     clone() const;
     Engine& operator=(const Engine& other);
     int         isFinished();
-// private:
+    
     friend std::ostream& operator<<(std::ostream &os, const Engine &e);
 
     bool        legal(Move move) const;

@@ -13,9 +13,7 @@ Score::Score(Engine eng, Color _scored_color, Engine _old)
     oppEngine.turn = ~e.turn;
     opp_moves = oppEngine.legal_moves();
     old = _old;
-
-    // std::cout<<(e==oppEngine)<<std::endl;
-
+  
     center = bitboard(18)|bitboard(20)|bitboard(27)|bitboard(29)|bitboard(34)| bitboard(36)| bitboard(43)| bitboard(45);
     back_row_bridge_1 = bitboard(57) | bitboard(59);
     back_row_bridge_2 = bitboard(4) | bitboard(6);
@@ -99,7 +97,6 @@ int Score::cent(Engine eng)
 int Score::centr(Engine eng)
 {
     Color active = eng.turn;
-    Color passive = ~active;
     int from_moves = e.count_bits(center & e.pieces[active]);
     Bitboard to_mask=0;
     for(Move move : eng.legal_moves())
@@ -110,20 +107,6 @@ int Score::centr(Engine eng)
     int scored = from_moves+to_moves;
 
     return scored;
-    // int from_moves_opp = e.count_bits(center & e.pieces[opposide_color]);
-    // Bitboard to_mask_opp=0;
-    // for(Move move : opp_moves)
-    // {
-    //     to_mask_opp |= bitboard(move.to);
-    // }
-    // int to_moves_opp = e.count_bits(center & to_mask);
-    // int opp = from_moves_opp+to_moves_opp;
-
-    // if(scored_color == active)
-    //     return scored-opp;
-    // else 
-    //     return opp-scored;
-
 }
 
 /*  The parameter is credited with 1 for each square to which the
@@ -132,13 +115,6 @@ int Score::centr(Engine eng)
     available.*/
 int Score::mob(Engine eng)
 {
-    Color active = eng.turn;
-    Color passive = ~active;
-    // // if(scored_color == active)
-    //     return unique_to_sq.size();
-    // // else   
-    //     // return -unique_to_sq.size();
-
     std::set<int> unique_to_sq1;
     MoveList unique_from_to_list1;
     for (const auto from : BitIterator(eng.pieces[eng.turn] & eng.kings))
@@ -162,21 +138,6 @@ int Score::mob(Engine eng)
     square could be captured without an exchange.*/
 int Score::deny(Engine eng)
 {
-    Color active = eng.turn;
-    Color passive = ~active;
-
-    // int result = 0;
-    //wykonaj ruch z MOB
-    // Color start_color = e.turn;
-
-    // MoveList list;
-    // for (const auto from : BitIterator(e.pieces[e.turn] & e.kings))
-    //     for (const auto to : BitIterator(e.king_moves(from)))
-    //         list.emplace_back(Move(Square(from), Square(to), QUIET));
-    // for (const auto from : BitIterator(e.pieces[e.turn] & ~e.kings))
-    //     for (const auto to : BitIterator(e.man_moves(from)))
-    //         list.emplace_back(Move(Square(from), Square(to), bitboard(to) & OPPOSITE_RANK[e.turn] ? PROMOTION : QUIET));
-
     std::set<int> unique_to_sq1;
     MoveList unique_from_to_list1;
     for (const auto from : BitIterator(eng.pieces[eng.turn] & eng.kings))
@@ -197,19 +158,15 @@ int Score::deny(Engine eng)
     // ruch z MOB
     for(Move move_MOB : unique_from_to_list1)
     {   
-        // Square move = move_MOB.from;
         Square dest = move_MOB.to;
-        // Engine tmpEngine = *e.clone();
         Engine tmpEngine = eng;
         tmpEngine.act(move_MOB);
         Color active = tmpEngine.turn;
-        // std::vector<std::pair<Engine, Move>> moves_2 = all_possible_captures_outcomes(tmpEngine);
         for(Move move_2 : tmpEngine.legal_captures())
         {
             // czy można zbic ruch z MOB
             if((bitboard(dest) & Engine::get_captured_position(move_2)) != 0 )
             {
-                // Engine tmpEngine_2 = *tmpEngine.clone();
                 Engine tmpEngine_2 = tmpEngine;
                 tmpEngine_2.act(move_2);
                 if (tmpEngine_2.turn == active)
@@ -228,10 +185,7 @@ int Score::deny(Engine eng)
             }
         }
     }
-    // if(scored_color == active)
-        return denials.size();
-    // else
-    //     return -denials.size();
+    return denials.size();
 }
 
 
@@ -246,10 +200,6 @@ int Score::kcent(Engine eng)
 }
 
 /*The parameter is credited with the difference between MOB and DENY.*/
-
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-TODO zapamietywac w zmiennej, żeby nie liczyć 2 razy
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 int Score::mobil(Engine eng)
 {
     return mob(eng) - deny(eng);
@@ -261,8 +211,6 @@ int Score::mobil(Engine eng)
     as those vertical files starting with squares 1, 2, 3, and 4.*/
 int Score::mov(Engine eng)
 {
-    Color active = eng.turn;
-    Color passive = ~active;
     int white_score = 2*(eng.count_bits(eng.pieces[WHITE] & ~eng.kings))+3*(eng.count_bits(eng.pieces[WHITE] & eng.kings));
     int black_score = 2*(eng.count_bits(eng.pieces[BLACK] & ~eng.kings))+3*(eng.count_bits(eng.pieces[BLACK] & eng.kings));
     
@@ -279,10 +227,7 @@ int Score::mov(Engine eng)
     a passive piece on a subsequent move.*/
 int Score::thret(Engine eng)
 {
-    Color active = eng.turn;
-    Color passive = ~active;
     int result_scored = 0;
-    int result_opp = 0;
 
     for(Move move : legal_moves)
     {
@@ -296,24 +241,12 @@ int Score::thret(Engine eng)
     return result_scored;
 }
 
-int Score::position_score()
-{
-    int i = 1;
-    int total = 0;
-    for(Bitboard s : scores)
-    {
-        total += i*e.count_bits(e.pieces[scored_color] & s);
-        i++;
-    }
-    return total;
-}
 
 int Score::piece_score_diff()
 {
     int white_score = (2*(e.count_bits(e.pieces[WHITE] & ~e.kings)))+(3*(e.count_bits(e.pieces[WHITE] & e.kings)));
     int black_score = (2*(e.count_bits(e.pieces[BLACK] & ~e.kings)))+(3*(e.count_bits(e.pieces[BLACK] & e.kings)));
 
-    // return color == WHITE ? white_score - black_score : black_score - white_score;
     if(scored_color == BLACK)
         return black_score - white_score;
     if(scored_color == WHITE)
@@ -327,7 +260,6 @@ std::vector<std::pair<Engine, Move>> Score::all_possible_moves_outcomes(Engine e
     Color color = e.turn;
     for(Move move : e.legal_moves())
     {
-        // Engine tmp = *e.clone();
         Engine tmp = e;
         tmp.act(move);
         
@@ -347,7 +279,6 @@ std::vector<std::pair<Engine, Move>> Score::all_possible_captures_outcomes(Engin
     Color color = e.turn;
     for(Move move : e.legal_captures())
     {
-        // Engine tmp = *e.clone();
         Engine tmp = e;
         tmp.act(move);
         
@@ -372,35 +303,19 @@ int Score::score()
         return INT32_MIN;
     else if(finish == DRAW) //draw
         return INT32_MIN+1;
-
-    // std::cout << e.turn << " " << old.turn << " passive: " << passive << " scored: " << scored_color << std::endl;
-
-    // int _adv   = adv(e) - adv(old);
-    // int _back  = back(e) - back(old);
-    int _cent  = cent(e) - cent(old);
-    // int _centr = centr(e) - centr(old);
-    int _deny  = deny(e) - deny(old);
-    int _kcent = kcent(e) - kcent(old);
-    int _mob   = mob(e) - mob(old);
-    int _mobil = _mob - _deny;
-    // int _mov   = mov(e) - mov(old);
-    int _thret = thret(e) - thret(old);
-
-    int _adv   = adv();
-    int _back  = back();
-    // int _cent  = cent();
-    // int _centr = centr(e);
-    // int _deny  = deny();
-    // int _kcent = kcent(e);
-    // int _mob   = mob();
-    // int _mobil = _mob - _deny;
-    int _mov   = mov(e);
-    // int _thret = thret(e);
     
-
     int sign = (e.turn == scored_color) ? 1 : -1;
 
-    int _centr = sign*(centr(e) - centr(oppEngine));
+    int _centr = sign*centr(e);
+    int _thret = sign*thret(e);
+    int _adv   = sign*adv();
+    int _back  = sign*back();
+    int _cent  = sign*cent(e);
+    int _deny  = sign*deny(e);
+    int _kcent = sign*kcent(e);
+    int _mob   = sign*mob(e);
+    int _mobil = _mob - _deny;
+    int _mov   = sign*mov(e);
 
     bool undenied_mobility= _mobil > 0 ? 1 : 0;
     bool total_mobility   = _mob > 0 ? 1 : 0;
@@ -415,20 +330,19 @@ int Score::score()
     int _moc_4  = !(undenied_mobility) && !(control) ? 1 : 0;
 
     int board_score = 0
-                    // + _moc_2*(-1)*(1<<18)  
-                    // + _kcent*(1<<16) //
-                    // + _moc_4*(-1)*(1<<14)  
-                    // + _mode_3*(-1)*(1<<13) 
-                    // + _demmo*(-1)*(1<<11)  
-                    // + _mov*(1<<8)       // ??   
-                    // + _adv*(-1)*(1<<8)     //?????????????
-                    // + _mode_2*(-1)*(1<<8)  
-                    // + _back*(-1)*(1<<6)    
-                    // + _centr*(1<<5) // i think its ok
-                    // + _thret*(1<<5) // ?????        
-                    // + _moc_3*(1<<4)        
+                    + _moc_2*(-1)*(1<<18)  
+                    + _kcent*(1<<16) 
+                    + _moc_4*(-1)*(1<<14)  
+                    + _mode_3*(-1)*(1<<13) 
+                    + _demmo*(-1)*(1<<11)  
+                    + _mov*(1<<8)         
+                    + _adv*(-1)*(1<<8)    
+                    + _mode_2*(-1)*(1<<8)  
+                    + _back*(-1)*(1<<6)    
+                    + _centr*(1<<5) 
+                    + _thret*(1<<5)       
+                    + _moc_3*(1<<4)        
                     + piece_score_diff()*(1<<19)
-                    // + position_score(e, color)*(1<<14)
                     ;
 
     return board_score; 
