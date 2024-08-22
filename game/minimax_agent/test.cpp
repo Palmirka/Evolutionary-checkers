@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define VERBOSE
+// #define VERBOSE
 
 void print_legal_moves(Engine e)
 {
@@ -347,8 +347,8 @@ int main()
         {
             auto duration_10 = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start_10);
             auto s = std::to_string(duration_10.count());
-            std::cout <<"hashmap size black: " << mm_black.hashmap_black1.size() << std::endl;
-            std::cout <<"hashmap size white: " << mm_white.hashmap_white1.size() << std::endl;
+            std::cout <<"hashmap size black: " << mm_black.hashmap_black.size() << std::endl;
+            std::cout <<"hashmap size white: " << mm_white.hashmap_white.size() << std::endl;
             std::cout << i <<" sum: " << s << " s" << std::endl;
         }
         // e.print();

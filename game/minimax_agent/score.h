@@ -45,7 +45,6 @@ class Score {
         int mov(Engine eng);
         int thret(Engine eng);
         int piece_score_diff();
-        int position_score();
 
         std::vector<std::pair<Engine, Move>> all_possible_moves_outcomes(Engine e);
         std::vector<std::pair<Engine, Move>> all_possible_captures_outcomes(Engine e);

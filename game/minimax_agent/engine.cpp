@@ -1,13 +1,17 @@
+//g++ -Wall test.cpp -o test1 $(python3-config --includes) $(python3-config --ldflags) -lpython3.10
+
 #include "engine.h"
+#include <pybind11/pytypes.h>
+#include <pybind11/numpy.h>  
 #include <cstddef>
 #include <ostream>
 #include <iostream>
 #include <algorithm>
 #include <iterator>
 #include <bitset>
-#include <pybind11/pytypes.h>
-#include <pybind11/numpy.h>  
 #include <array> 
+
+namespace py = pybind11;
 
 void Engine::print()
 {
@@ -52,11 +56,6 @@ void Engine::print()
 
 Engine* Engine::clone() const
 {
-    // Engine* copy;
-    // std::copy(std::begin(pieces), std::end(pieces), std::begin(copy->pieces));
-    // copy->kings = kings;
-    // copy->turn  = turn;
-    // return copy;
     Engine* copy = new Engine(*this);
     return copy;
 }
@@ -77,8 +76,7 @@ void Engine::act(Move move)
     const auto t_bb = bitboard(move.to);
 
     pieces[turn]    |= t_bb;
-    // if (kings & f_bb || move.type & PROMOTION)
-    //     kings       |= t_bb;
+
     if (kings & f_bb)
         kings       |= t_bb;
 
@@ -174,24 +172,10 @@ Bitboard Engine::captures() const
 {
     const auto non = ~all();
     const auto opp = pieces[~turn];
-    // const auto k = pieces[turn] & kings;
-
-    // auto captures = (shift(shift(k, NORTH_EAST) & opp, NORTH_EAST) & non) |
-    //                 (shift(shift(k, NORTH_WEST) & opp, NORTH_WEST) & non) |
-    //                 (shift(shift(k, SOUTH_EAST) & opp, SOUTH_EAST) & non) |
-    //                 (shift(shift(k, SOUTH_WEST) & opp, SOUTH_WEST) & non);
     if(!legal_king_capture_moves(0).first.empty())
         return 1;
     
     Bitboard captures = 0;
-            
-    // for(int x=1; x<=7; x++)
-    // {
-    //     for(int j=1; j<=6; j++)
-    //     {
-    //        captures |= (shift_x(shift_x(k, NORTH_WEST, j) & opp, NORTH_WEST, x) & non);
-    //     }
-    // }
 
     if (turn == WHITE) {
         captures |= (shift(shift(pieces[WHITE], NORTH_EAST) & opp, NORTH_EAST) & non) |
@@ -212,28 +196,28 @@ Bitboard Engine::king_moves(size_t sq) const
     const auto all = this->all();
     Bitboard result=0;
     Bitboard iter = bitboard(sq);
-    while(iter = shift(iter, NORTH_WEST))
+    while((iter = shift(iter, NORTH_WEST)))
     {
         if(iter & all)
             break;
         result |= iter;
     }
     iter = bitboard(sq);
-    while(iter = shift(iter, NORTH_EAST))
+    while((iter = shift(iter, NORTH_EAST)))
     {
         if(iter & all)
             break;
         result |= iter;
     }
     iter = bitboard(sq);
-    while(iter = shift(iter, SOUTH_WEST))
+    while((iter = shift(iter, SOUTH_WEST)))
     {
         if(iter & all)
             break;
         result |= iter;
     }
     iter = bitboard(sq);
-    while(iter = shift(iter, SOUTH_EAST))
+    while((iter = shift(iter, SOUTH_EAST)))
     {
         if(iter & all)
             break;
@@ -247,15 +231,6 @@ Bitboard Engine::king_moves(size_t sq) const
 
 Bitboard Engine::man_capture_moves(size_t sq) const
 {
-    // const auto non = ~all();
-
-    // if (turn == WHITE) {
-    //     return (shift(R_ATTACKS[WHITE][sq] & pieces[BLACK], NORTH_EAST) & non) |
-    //            (shift(L_ATTACKS[WHITE][sq] & pieces[BLACK], NORTH_WEST) & non);
-    // } else {
-    //     return (shift(R_ATTACKS[BLACK][sq] & pieces[WHITE], SOUTH_EAST) & non) |
-    //            (shift(L_ATTACKS[BLACK][sq] & pieces[WHITE], SOUTH_WEST) & non);
-    // }
     const auto non = ~all();
     const auto opp = pieces[~turn];
 
@@ -268,37 +243,15 @@ Bitboard Engine::man_capture_moves(size_t sq) const
 
 Bitboard Engine::king_capture_moves(size_t sq) const
 {
-    // const auto non = ~all();
     const auto all = this->all();
     if(!(bitboard(sq) & kings))
         return 0;
-    const auto opp = pieces[~turn];
-
-    // std::cout<<"---";
-    //  std::cout<<std::bitset<64>(kings)<<std::endl;
-
-    // return (shift(R_KING_ATTACKS[WHITE][sq] & opp, NORTH_EAST) & non) |
-    //        (shift(L_KING_ATTACKS[WHITE][sq] & opp, NORTH_WEST) & non) |
-    //        (shift(R_KING_ATTACKS[BLACK][sq] & opp, SOUTH_EAST) & non) |
-    //        (shift(L_KING_ATTACKS[BLACK][sq] & opp, SOUTH_WEST) & non);
-
-    
-    // std::cout<<(L_KING_ATTACKS[BLACK][sq]&all)<<std::endl;
-    // std::cout<<myMsb(L_KING_ATTACKS[BLACK][sq]&all)<<std::endl;
-
-    // Engine e = Engine(*this);
-    // e.pieces[BLACK] = pieces[turn];
-    // e.pieces[WHITE] = 0;
-    // e.print();
 
     Bitboard up_mask = (R_KING_ATTACKS[WHITE][sq] & set_king_captures_white(R_KING_ATTACKS[WHITE][sq]&all, pieces[turn])) |
             (L_KING_ATTACKS[WHITE][sq] & set_king_captures_white(L_KING_ATTACKS[WHITE][sq]&all, pieces[turn]));
 
     Bitboard down_mask = (R_KING_ATTACKS[BLACK][sq] & set_king_captures_black(R_KING_ATTACKS[BLACK][sq]&all, pieces[turn])) |
             (L_KING_ATTACKS[BLACK][sq] & set_king_captures_black(L_KING_ATTACKS[BLACK][sq]&all, pieces[turn]));
-
-    // std::cout<<up_mask<<std::endl;
-    // std::cout<<down_mask<<std::endl<<"--"<<std::endl;
 
     return down_mask | up_mask;
 }
@@ -309,10 +262,6 @@ MoveList Engine::legal_captures() const
     if(continue_from == 64)
     {
         if (captures()) {
-
-            // for (const auto from : BitIterator(pieces[turn] & kings))
-            //     for (const auto to : BitIterator(king_capture_moves(from)))
-            //         list.emplace_back(Square(from), Square(to), CAPTURE);
             list = legal_king_capture_moves(0).first;
 
             for (const auto from : BitIterator(pieces[turn] & ~kings))
@@ -324,8 +273,6 @@ MoveList Engine::legal_captures() const
     }else
     {
         if (captures()) {
-            // for (const auto to : BitIterator(king_capture_moves(continue_from)))
-            //     list.emplace_back(Square(continue_from), Square(to), CAPTURE);
             list = legal_king_capture_moves(0, continue_from).first;
 
             for (const auto to : BitIterator(man_capture_moves(continue_from)))
@@ -338,10 +285,6 @@ MoveList Engine::legal_captures() const
 
 std::pair<MoveList, int> Engine::legal_king_capture_moves(int depth, Square continue_from_sq) const
 {
-    // Engine printtest = Engine(*this);
-    // printtest.print();
-    // std::cout<<depth<<std::endl;
-
     MoveList list;
     std::vector<std::pair<Move, int>> result_list;
     std::pair<MoveList, int> result;
@@ -377,15 +320,6 @@ MoveList Engine::legal_moves() const
     if(continue_from == 64)
     {
         if (captures()) {
-
-            // for (const auto from : BitIterator(pieces[turn] & kings))
-            //     for (const auto to : BitIterator(king_capture_moves(from)))
-            //     {
-            //         Engine tmp = *this->clone();
-            //         Move m = Move(Square(from), Square(to), CAPTURE);
-            //         tmp.act(m);
-            //         list.emplace_back(Square(from), Square(to), CAPTURE);
-            //     }
             list = legal_king_capture_moves(0).first;     
 
             for (const auto from : BitIterator(pieces[turn] & ~kings))
@@ -407,8 +341,6 @@ MoveList Engine::legal_moves() const
     }else
     {
         if (captures()) {
-            // for (const auto to : BitIterator(king_capture_moves(continue_from)))
-            //     list.emplace_back(Square(continue_from), Square(to), CAPTURE);
             list = legal_king_capture_moves(0, continue_from).first;   
 
             for (const auto to : BitIterator(man_capture_moves(continue_from)))
@@ -530,24 +462,10 @@ Engine& Engine::operator=(const Engine& other) {
         return *this;
     }
 
-// int Engine::count_pawns(Color player)
-// {
-//     int result=0;
-//     for (const auto from : BitIterator(pieces[player] & ~kings))
-//         result++;
-//     return result;
-// }
-// int Engine::count_kings(Color player)
-// {
-//     int result=0;
-//     for (const auto from : BitIterator(pieces[player] & kings))
-//         result++;
-//     return result;
-// }
 
 Engine::~Engine()
 {
-    // delete[] pieces;
+
 }
 
 /* -1 NOT FINISHED
@@ -570,7 +488,6 @@ int Engine::isFinished()
         if(move.from == 0 && move.to == 0)
         {
             return ~turn;
-            // std::cout<<"xDDDDDDDDDDDDDDDDDDDDDDD";
         }
             
         return -1;
@@ -578,7 +495,6 @@ int Engine::isFinished()
     else if(size > 1)
         return -1;
 
-    // std::cout<<"==================="<<size<<std::endl;
     return ~turn;
 }
 
@@ -648,7 +564,6 @@ MoveLists Engine::legal_moves_lists(Engine e, MoveList ml) const
             arg.emplace_back(move);
             MoveLists rest = legal_moves_lists(tmp, arg);
             outcomes.insert(outcomes.end(), rest.begin(), rest.end());
-            // outcomes.emplace_back(rest);
         }
         else
         {   
