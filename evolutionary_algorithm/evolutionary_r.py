@@ -12,46 +12,40 @@ class Evolutionary:
     def __init__(self, objective, population_size: int, descendant_size: int,
                  opponent_strategy: Callable[[MoveStrategy], MoveList], iters: int, n: int, **strategy_args):
         """Initialize evolutionary and diagram parameters"""
-        self.pool = np.array([Engine() for _ in range(population_size)])
+        self.pool = np.array([[Engine() for _ in range(population_size)] for _ in range(n)])
         self.mean = None
         self.deviation = None
-        self.mean_kings = None
-        self.deviation_kings = None
         self.opponent_strategy = opponent_strategy
         self.strategy_args = strategy_args
         self.objective_function = objective.function
-        self.coefficients = np.empty((population_size, 2, objective.size), float)
+        self.coefficients = np.empty((n, population_size, objective.size), float)
         self.population_size = population_size
         self.descendant_size = descendant_size
         self.individual_length = objective.size
         self.iters = iters
         self.n = n
 
-        self.best_coefficients = np.empty((self.n, self.individual_length, 2), float)
+        self.best_coefficients = np.empty((self.n, self.individual_length))
         self.max_evaluations = np.empty((self.n, self.iters + 1), float)
         self.min_evaluations = np.empty((self.n, self.iters + 1), float)
         self.mean_evaluations = np.empty((self.n, self.iters + 1), float)
 
     def init(self):
         """Initialize starting values"""
-        self.mean = np.zeros(self.individual_length)
-        self.deviation = np.ones(self.individual_length)
-        self.mean_kings = np.zeros(self.individual_length)
-        self.deviation_kings = np.ones(self.individual_length)
-        self.coefficients = self.random_coefficients()
+        self.mean = np.array([np.zeros(self.individual_length) for _ in range(self.n)])
+        self.deviation = np.array([np.ones(self.individual_length) for _ in range(self.n)])
+        self.coefficients = np.array([self.random_coefficients(x) for x in range(self.n)])
 
-    def random_coefficients(self) -> np.ndarray:
+    def random_coefficients(self, x) -> np.ndarray:
         """Generate coefficients with normal distribution"""
 
         def random_coefficient():
-            coefficient = np.array([(np.random.normal(self.mean[i], self.deviation[i]),
-                                     np.random.normal(self.mean_kings[i], self.deviation_kings[i]))
-                                    for i in range(self.individual_length)])
-            return coefficient
+            coefficient = [np.random.normal(self.mean[x][i], self.deviation[x][i]) for i in range(self.individual_length)]
+            return np.array(coefficient)
 
         return np.array([random_coefficient() for _ in range(self.population_size)])
 
-    def model_estimation(self, coefficients):
+    def model_estimation(self, coefficients, x):
         """Estimate probability parameters to generate better population"""
         pass
 
@@ -59,8 +53,8 @@ class Evolutionary:
         """Get and save new fitness values"""
 
         def evaluate_individual(idx, coefficients):
-            self.pool[idx].reset()
-            return idx, Play(self.pool[idx], coefficients, self.objective_function, self.opponent_strategy).play(idx, **self.strategy_args)
+            self.pool[x][idx].reset()
+            return idx, Play(self.pool[x][idx], coefficients, self.objective_function, self.opponent_strategy).play(idx, **self.strategy_args)
 
         values = np.zeros(self.population_size)
 
@@ -68,7 +62,7 @@ class Evolutionary:
         #     _, values[idx] = evaluate_individual(idx, coefficient)
 
         results = Parallel(n_jobs=-1)(
-            delayed(evaluate_individual)(idx, coefficient) for idx, coefficient in enumerate(self.coefficients))
+            delayed(evaluate_individual)(idx, coefficient) for idx, coefficient in enumerate(self.coefficients[x]))
 
         for idx, value in results:
             values[idx] = value
@@ -104,3 +98,6 @@ class Evolutionary:
         plt.plot(np.mean(self.mean_evaluations, axis=0), label='mean_evaluation')
         plt.legend()
         plt.show()
+
+
+

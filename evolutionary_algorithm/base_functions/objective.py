@@ -1,15 +1,23 @@
+import os
 import numpy as np
+import pickle
 from evolutionary_algorithm.preparation.combination_check import check_board
 from evolutionary_algorithm.preparation.masking import binary_of_keys
-from evolutionary_algorithm.preparation.reader import read_file
 from checkers_and_minimax_python_module import Engine
 
 
 class Objective:
     def __init__(self):
-        self.dict = read_file("boards_analyse_2x2_32897_games.txt", 0)[0]
-        self.dict.update(read_file("boards_analyse_3x3_32897_games.txt", 2048)[0])
-        self.dict.update(read_file("boards_analyse_4x4_32897_games.txt", 4096)[0])
+        path2x2 = '/../../data_analysis_scripts/board_analizer/boards_analyse_2x2_32897_games_cut.txt'
+        path3x3 = '/../../data_analysis_scripts/board_analizer/boards_analyse_3x3_32897_games_cut.txt'
+        path4x4 = '/../../data_analysis_scripts/board_analizer/boards_analyse_4x4_32897_games_cut.txt'
+
+        with open(os.path.dirname(__file__) + path2x2, 'rb') as handle:
+            self.dict = pickle.load(handle)
+        with open(os.path.dirname(__file__) + path3x3, 'rb') as handle:
+            self.dict.update(pickle.load(handle))
+        with open(os.path.dirname(__file__) + path4x4, 'rb') as handle:
+            self.dict.update(pickle.load(handle))
         self.size, self.usage, self.values_white, self.values_black, self.values_w_king, self.values_b_king = binary_of_keys(self.dict)
         print(self.size)
 

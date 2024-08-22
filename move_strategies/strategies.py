@@ -19,5 +19,4 @@ class MoveStrategy:
     @staticmethod
     def minimax(game: Engine, **kwargs):
         minimax = Minimax()
-        print(kwargs)
         return minimax.minimax_move(game, kwargs.get('depth', 2), Color.BLACK)
