@@ -93,7 +93,7 @@ Move Minimax::minimax_move(Engine e, int depth, Color color)
 
 int Minimax::rec(Engine e, Move best_move, Color start_color, int depth, int alpha, int beta, bool root, Engine old, bool maxi, SoftmaxPair &values)
 {
-   if(depth == 0 || e.isFinished() > -1)
+   if(depth <= 0 || e.isFinished() > -1)
     {
         return score(e, start_color, old);
     }
