@@ -9,10 +9,6 @@ Score::Score(Engine eng, Color _scored_color, Engine _old)
     active = e.turn;
     passive = ~active;
     legal_moves = e.legal_moves();
-    oppEngine = e;
-    oppEngine.turn = ~e.turn;
-    opp_moves = oppEngine.legal_moves();
-    old = _old;
   
     center = bitboard(18)|bitboard(20)|bitboard(27)|bitboard(29)|bitboard(34)| bitboard(36)| bitboard(43)| bitboard(45);
     back_row_bridge_1 = bitboard(57) | bitboard(59);
@@ -46,7 +42,7 @@ int Score::adv()
 {
     Bitboard rows_5_and_6 = 0x00000000'AA550000;
     Bitboard rows_3_and_4 = 0x0000AA55'00000000;
-    if(passive == WHITE)
+    if(active == WHITE)
     {
         Bitboard tmp = rows_5_and_6;
         rows_5_and_6 = rows_3_and_4;
@@ -115,22 +111,23 @@ int Score::centr(Engine eng)
     available.*/
 int Score::mob(Engine eng)
 {
-    std::set<int> unique_to_sq1;
-    MoveList unique_from_to_list1;
-    for (const auto from : BitIterator(eng.pieces[eng.turn] & eng.kings))
-        for (const auto to : BitIterator(eng.king_moves(from)))
-        {
-            unique_to_sq1.insert(to);
-            unique_from_to_list1.emplace_back(Move(Square(from), Square(to), QUIET));
-        }
-    for (const auto from : BitIterator(eng.pieces[eng.turn] & ~eng.kings))
-        for (const auto to : BitIterator(e.man_moves(from)))
-        {
-            unique_to_sq1.insert(to);
-            unique_from_to_list1.emplace_back(Move(Square(from), Square(to), bitboard(to) & OPPOSITE_RANK[eng.turn] ? PROMOTION : QUIET));
-        }
+    // std::set<int> unique_to_sq1;
+    // MoveList unique_from_to_list1;
+    // for (const auto from : BitIterator(eng.pieces[eng.turn] & eng.kings))
+    //     for (const auto to : BitIterator(eng.king_moves(from)))
+    //     {
+    //         unique_to_sq1.insert(to);
+    //         unique_from_to_list1.emplace_back(Move(Square(from), Square(to), QUIET));
+    //     }
+    // for (const auto from : BitIterator(eng.pieces[eng.turn] & ~eng.kings))
+    //     for (const auto to : BitIterator(e.man_moves(from)))
+    //     {
+    //         unique_to_sq1.insert(to);
+    //         unique_from_to_list1.emplace_back(Move(Square(from), Square(to), bitboard(to) & OPPOSITE_RANK[eng.turn] ? PROMOTION : QUIET));
+    //     }
 
-    return unique_to_sq1.size();
+    // return unique_to_sq1.size();
+    return unique_to_sq.size();
 }
 
 /*  The parameter is credited with 1 for each square defined
@@ -140,18 +137,20 @@ int Score::deny(Engine eng)
 {
     std::set<int> unique_to_sq1;
     MoveList unique_from_to_list1;
-    for (const auto from : BitIterator(eng.pieces[eng.turn] & eng.kings))
-        for (const auto to : BitIterator(eng.king_moves(from)))
-        {
-            unique_to_sq1.insert(to);
-            unique_from_to_list1.emplace_back(Move(Square(from), Square(to), QUIET));
-        }
-    for (const auto from : BitIterator(eng.pieces[eng.turn] & ~eng.kings))
-        for (const auto to : BitIterator(e.man_moves(from)))
-        {
-            unique_to_sq1.insert(to);
-            unique_from_to_list1.emplace_back(Move(Square(from), Square(to), bitboard(to) & OPPOSITE_RANK[eng.turn] ? PROMOTION : QUIET));
-        }
+    // for (const auto from : BitIterator(eng.pieces[eng.turn] & eng.kings))
+    //     for (const auto to : BitIterator(eng.king_moves(from)))
+    //     {
+    //         unique_to_sq1.insert(to);
+    //         unique_from_to_list1.emplace_back(Move(Square(from), Square(to), QUIET));
+    //     }
+    // for (const auto from : BitIterator(eng.pieces[eng.turn] & ~eng.kings))
+    //     for (const auto to : BitIterator(e.man_moves(from)))
+    //     {
+    //         unique_to_sq1.insert(to);
+    //         unique_from_to_list1.emplace_back(Move(Square(from), Square(to), bitboard(to) & OPPOSITE_RANK[eng.turn] ? PROMOTION : QUIET));
+    //     }
+    unique_to_sq1 = unique_to_sq;
+    unique_from_to_list1 = unique_from_to_list;
 
 
     std::set<Square> denials;
@@ -246,7 +245,7 @@ int Score::piece_score_diff()
 {
     int white_score = (2*(e.count_bits(e.pieces[WHITE] & ~e.kings)))+(3*(e.count_bits(e.pieces[WHITE] & e.kings)));
     int black_score = (2*(e.count_bits(e.pieces[BLACK] & ~e.kings)))+(3*(e.count_bits(e.pieces[BLACK] & e.kings)));
-
+    
     if(scored_color == BLACK)
         return black_score - white_score;
     if(scored_color == WHITE)
@@ -317,10 +316,10 @@ int Score::score()
     int _mobil = _mob - _deny;
     int _mov   = sign*mov(e);
 
-    bool undenied_mobility= _mobil > 0 ? 1 : 0;
-    bool total_mobility   = _mob > 0 ? 1 : 0;
-    bool denial_of_cc     = _deny > 0 ? 1 : 0;
-    bool control          = _cent > 0 ? 1 : 0;
+    bool undenied_mobility = _mobil > 0 ? 1 : 0;
+    bool total_mobility    = _mob > 0 ? 1 : 0;
+    bool denial_of_cc      = _deny > 0 ? 1 : 0;
+    bool control           = _cent > 0 ? 1 : 0;
 
     int _demmo  = denial_of_cc && !(total_mobility) ? 1 : 0;
     int _mode_2 = undenied_mobility && !(denial_of_cc) ? 1 : 0;

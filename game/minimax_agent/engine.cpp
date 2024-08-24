@@ -86,7 +86,7 @@ void Engine::act(Move move)
     if ((move.type & CAPTURE)) {
         if(kings & t_bb)
         {
-            Direction direction;
+            Direction direction = NORTH;
             int dir = int(move.to) - int(move.from);
             if( dir > 0)
             {
@@ -434,7 +434,6 @@ Engine::Engine(const Engine& other)
 {
     pieces[WHITE] = other.pieces[WHITE];
     pieces[BLACK] = other.pieces[BLACK];
-    pieces[BOTH] = other.pieces[BOTH];
     kings  = other.kings;
     turn   = other.turn;
     move_turn = other.move_turn;
@@ -453,7 +452,6 @@ Engine& Engine::operator=(const Engine& other) {
         if (this != &other) { 
             this->pieces[WHITE] = other.pieces[WHITE];
             this->pieces[BLACK] = other.pieces[BLACK];
-            this->pieces[BOTH] = other.pieces[BOTH];
             this->kings = other.kings;
             this->turn  = other.turn;
             this->move_turn = other.move_turn;
