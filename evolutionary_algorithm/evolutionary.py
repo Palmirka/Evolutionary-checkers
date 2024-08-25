@@ -1,94 +1,104 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
-from checkers.game import Game
+from checkers_and_minimax_python_module import Engine, MoveList
 from move_strategies.strategies import MoveStrategy
-from game.constants import titles
 from game.play import Play
+from game.constants import MAX_POINTS
 from typing import Callable, Tuple
 
 
 class Evolutionary:
-    def __init__(self, objective_function: Callable[[Game, np.ndarray], float], population_size: int,
-                 descendant_size: int, opponent_strategy: Callable[[MoveStrategy], Tuple[int, int]], iters: int, n: int,
-                 individual_length=12):
+    def __init__(self, objective, population_size: int, descendant_size: int,
+                 opponent_strategy: Callable[[MoveStrategy], MoveList], iters: int, n: int, **strategy_args):
         """Initialize evolutionary and diagram parameters"""
+        self.pool = np.array([Engine() for _ in range(population_size)])
+        self.individual_length_pawns = objective.size_p
+        self.individual_length_kings = objective.size_k
         self.mean = None
         self.deviation = None
+        self.mean_kings = None
+        self.deviation_kings = None
         self.opponent_strategy = opponent_strategy
-        self.objective_function = objective_function
-        self.coefficients = np.empty((population_size, individual_length))
+        self.strategy_args = strategy_args
+        self.objective_function = objective.function
+        self.coefficients_pawns = np.empty((population_size, objective.size_p), float)
+        self.coefficients_kings = np.empty((population_size, objective.size_k), float)
         self.population_size = population_size
         self.descendant_size = descendant_size
-        self.individual_length = individual_length
         self.iters = iters
         self.n = n
 
-        self.best_coefficients = np.empty((self.n, self.individual_length))
+        self.best_coefficients_pawns = np.empty((self.n, self.individual_length_pawns), float)
+        self.best_coefficients_kings = np.empty((self.n, self.individual_length_kings), float)
         self.max_evaluations = np.empty((self.n, self.iters + 1), float)
         self.min_evaluations = np.empty((self.n, self.iters + 1), float)
         self.mean_evaluations = np.empty((self.n, self.iters + 1), float)
 
     def init(self):
         """Initialize starting values"""
-        self.mean = np.zeros(self.individual_length)
-        self.deviation = np.ones(self.individual_length)
-        self.coefficients = self.random_coefficients()
+        self.mean = np.zeros(self.individual_length_pawns)
+        self.deviation = np.ones(self.individual_length_pawns)
+        self.mean_kings = np.zeros(self.individual_length_kings)
+        self.deviation_kings = np.ones(self.individual_length_kings)
+        self.random_coefficients()
 
-    def random_coefficients(self) -> np.ndarray:
+    def random_coefficients(self) -> None:
         """Generate coefficients with normal distribution"""
-        def random_coefficient():
-            coefficient = [np.random.normal(self.mean[i], self.deviation[i]) for i in range(self.individual_length)]
-            return np.array(coefficient)
-        return np.array([random_coefficient() for _ in range(self.population_size)])
 
-    def model_estimation(self, coefficients):
+        def single_random(mean, deviation, length):
+            return np.array([np.random.normal(mean[i], deviation[i]) for i in range(length)])
+
+        self.coefficients_pawns = np.array([single_random(self.mean, self.deviation, self.individual_length_pawns)
+                                            for _ in range(self.population_size)])
+        self.coefficients_kings = np.array([single_random(self.mean_kings, self.deviation_kings, self.individual_length_kings)
+                                            for _ in range(self.population_size)])
+
+    def model_estimation(self, coefficient_pawns, coefficient_kings):
         """Estimate probability parameters to generate better population"""
         pass
 
-    def evaluate(self, i: int, x: int) -> np.ndarray:
+    def evaluate(self, i: int, x: int, pawns: np.ndarray = None, kings: np.ndarray = None, save: bool = True) -> np.ndarray:
         """Get and save new fitness values"""
-        def evaluate_individual(idx, coefficient):
-            return idx, np.sum(np.array(
-                [Play(Game(), coefficient, self.objective_function, self.opponent_strategy).play() for _ in
-                 range(self.population_size)]))
+        def evaluate_individual(idx, pawns, kings):
+            self.pool[idx].reset()
+            return idx, Play(self.pool[idx], pawns[idx], kings[idx], self.objective_function, self.opponent_strategy).play(idx, **self.strategy_args)
+
+        if pawns is None:
+            pawns = self.coefficients_pawns
+        if kings is None:
+            kings = self.coefficients_kings
 
         values = np.zeros(self.population_size)
-        results = Parallel(n_jobs=-1)(
-            delayed(evaluate_individual)(idx, coefficient) for idx, coefficient in enumerate(self.coefficients))
-        for idx, value in results:
-            values[idx] = value
-        self.max_evaluations[x][i] = np.max(values)
-        self.min_evaluations[x][i] = np.min(values)
-        self.mean_evaluations[x][i] = np.mean(values)
+        for idx in range(self.population_size):
+            _, values[idx] = evaluate_individual(idx, pawns, kings)
+        # results = Parallel(n_jobs=-1)(
+        #     delayed(evaluate_individual)(idx) for idx in range(self.population_size))
+        #
+        # for idx, value in results:
+        #     values[idx] = value
+        if save:
+            self.max_evaluations[x][i] = np.max(values)
+            self.min_evaluations[x][i] = np.min(values)
+            self.mean_evaluations[x][i] = np.mean(values)
         return values
 
     def run(self, x) -> np.ndarray:
         """Single run of experiment"""
         pass
 
-    def run_n_times(self) -> np.ndarray:
+    def run_n_times(self) -> Tuple[np.ndarray, np.ndarray]:
         """Save results from n runs of function"""
         for x in range(self.n):
-            self.best_coefficients[x] = self.run(x)
-        return self.best_coefficients
-
-    def show_coefficients(self):
-        """Show evaluation of results"""
-        fig, axs = plt.subplots(3, 4, figsize=(12, 8))
-        axs = axs.flatten()
-        for i in range(self.best_coefficients.shape[1]):
-            axs[i].plot(np.arange(self.best_coefficients.shape[0]), self.best_coefficients[:, i])
-            axs[i].set_title(titles[i])
-        plt.tight_layout()
-        plt.show()
+            self.best_coefficients_pawns[x], self.best_coefficients_kings[x] = self.run(x)
+        return self.best_coefficients_pawns, self.best_coefficients_kings
 
     def show(self):
         """Show evaluation of fitness function"""
         plt.figure()
         plt.title(self.__class__.__name__)
-        plt.plot([self.population_size] * (self.iters + 1), color='r')
-        plt.plot([-self.population_size] * (self.iters + 1), color='r')
+        plt.plot([MAX_POINTS] * (self.iters + 1), color='r')
+        plt.plot([-MAX_POINTS] * (self.iters + 1), color='r')
         plt.plot(np.mean(self.max_evaluations, axis=0), label='max_evaluation')
         plt.plot(np.mean(self.min_evaluations, axis=0), label='min_evaluation')
         plt.plot(np.mean(self.mean_evaluations, axis=0), label='mean_evaluation')

@@ -51,7 +51,7 @@ void Engine::print()
     std::cout << "\n   ";
     for (int f = 0; f <= 7; ++f)
         std::cout << ' ' << FILE_STR[f];
-    std::cout << "\n\nside:\t" << SIDE_STR[turn];
+    std::cout << "\n\nside:\t" << SIDE_STR[turn] << std::endl;
 }
 
 Engine* Engine::clone() const
