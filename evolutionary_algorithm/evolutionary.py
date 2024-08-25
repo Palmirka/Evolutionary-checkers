@@ -5,11 +5,8 @@ from checkers_and_minimax_python_module import Engine, MoveList
 from move_strategies.strategies import MoveStrategy
 from game.play import Play
 from game.constants import MAX_POINTS
-<<<<<<< HEAD
 from typing import Callable, Tuple
-=======
-from typing import Callable
->>>>>>> main
+
 
 
 class Evolutionary:
