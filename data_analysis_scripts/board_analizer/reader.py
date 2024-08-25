@@ -27,7 +27,7 @@ def read_file(file_path, range_to_delete):
 
 
 
-file_path_4x4 = "boards_analyse_4x4_32897_games.txt"
+file_path_4x4 = os.path.dirname(__file__) + "boards_analyse_4x4_32897_games.txt"
 file_path_3x3 = "boards_analyse_3x3_32897_games.txt"
 file_path_2x2 = "boards_analyse_2x2_32897_games.txt"
     

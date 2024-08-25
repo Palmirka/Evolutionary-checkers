@@ -33,7 +33,7 @@ class Play:
         return best_move
 
     def points(self, player: Color) -> int:
-        """Awasrd points for game"""
+        """Award points for game"""
         winner = self.game.isFinished()
         turn = self.game.move_turn
         if winner == player:

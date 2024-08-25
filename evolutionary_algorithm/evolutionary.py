@@ -5,7 +5,11 @@ from checkers_and_minimax_python_module import Engine, MoveList
 from move_strategies.strategies import MoveStrategy
 from game.play import Play
 from game.constants import MAX_POINTS
+<<<<<<< HEAD
 from typing import Callable, Tuple
+=======
+from typing import Callable
+>>>>>>> main
 
 
 class Evolutionary:
@@ -30,7 +34,6 @@ class Evolutionary:
         self.n = n
 
         self.best_coefficients_pawns = np.empty((self.n, self.individual_length_pawns), float)
-        self.best_coefficients_kings = np.empty((self.n, self.individual_length_kings), float)
         self.max_evaluations = np.empty((self.n, self.iters + 1), float)
         self.min_evaluations = np.empty((self.n, self.iters + 1), float)
         self.mean_evaluations = np.empty((self.n, self.iters + 1), float)
@@ -89,6 +92,10 @@ class Evolutionary:
 
     def run_n_times(self) -> Tuple[np.ndarray, np.ndarray]:
         """Save results from n runs of function"""
+
+        # results = Parallel(n_jobs=-1)(
+        #     delayed(self.run)(x) for x in range(self.n))
+
         for x in range(self.n):
             self.best_coefficients_pawns[x], self.best_coefficients_kings[x] = self.run(x)
         return self.best_coefficients_pawns, self.best_coefficients_kings
