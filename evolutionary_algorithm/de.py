@@ -22,11 +22,14 @@ class DE (Evolutionary):
         print(f'---------------------------------------------------')
         for i in range(self.iters):
             print(f'n: {x}, iter: {i}')
-            mutated_pawns, mutated_kings = Mutation.triple_combination(self.coefficients_pawns, self.mutation_factor), \
-                Mutation.triple_combination(self.coefficients_kings, self.mutation_factor)
-            crossover_pawns, crossover_kings = Crossover.combine_best(self.coefficients_pawns, mutated_pawns, self.crossover_factor), \
-                Crossover.combine_best(self.coefficients_kings, mutated_kings, self.crossover_factor)
-            mutated_values = self.evaluate(i, x, crossover_pawns, crossover_kings, False)
-            self.coefficients_pawns, self.coefficients_kings = Selection.replacement(self.coefficients_pawns, self.coefficients_kings, crossover_pawns, crossover_kings, values, mutated_values)
+            mutated_pawns, mutated_kings, mutated_diff = Mutation.triple_combination(self.coefficients_pawns, self.mutation_factor), \
+                Mutation.triple_combination(self.coefficients_kings, self.mutation_factor), \
+                Mutation.triple_combination(self.diff, self.mutation_factor)
+            crossover_pawns, crossover_kings, crossover_diff = Crossover.combine_best(self.coefficients_pawns, mutated_pawns, self.crossover_factor), \
+                Crossover.combine_best(self.coefficients_kings, mutated_kings, self.crossover_factor), \
+                Crossover.combine_best(self.diff, mutated_diff, self.crossover_factor)
+            mutated_values = self.evaluate(i, x, crossover_pawns, crossover_kings, crossover_diff, False)
+            self.coefficients_pawns, self.coefficients_kings, self.diff = \
+                Selection.replacement(self.coefficients_pawns, self.coefficients_kings, crossover_pawns, crossover_kings, crossover_diff, values, mutated_values)
             values = self.evaluate(i + 1, x)
         return self.coefficients_pawns[np.argmax(values)], self.coefficients_kings[np.argmax(values)]

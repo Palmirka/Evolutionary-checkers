@@ -26,16 +26,19 @@ class Selection:
         return selected_pawns, selected_kings
 
     @staticmethod
-    def replacement(population_pawns: np.ndarray, population_kings: np.ndarray, mutated_pawns: np.ndarray,
-                    mutated_kings: np.ndarray, values: np.ndarray, mutated_values: np.ndarray):
+    def replacement(population_pawns: np.ndarray, population_kings: np.ndarray, population_diff: np.ndarray,
+                    mutated_pawns: np.ndarray, mutated_kings: np.ndarray, mutated_diff: np.ndarray, values: np.ndarray, mutated_values: np.ndarray):
         mask = values > mutated_values
         selected_pawns = np.empty_like(population_pawns)
         selected_kings = np.empty_like(population_kings)
+        selected_diff = np.empty_like(population_diff)
         for idx in range(len(mask)):
             if mask[idx]:
                 selected_pawns[idx] = population_pawns[idx]
                 selected_kings[idx] = population_kings[idx]
+                selected_diff[idx] = population_diff[idx]
             else:
                 selected_pawns[idx] = mutated_pawns[idx]
                 selected_kings[idx] = mutated_kings[idx]
-        return selected_pawns, selected_kings
+                selected_diff[idx] = mutated_diff[idx]
+        return selected_pawns, selected_kings, selected_diff

@@ -22,11 +22,11 @@ class PBILc(Evolutionary):
     def binary_random(p):
         return int(random.uniform(0, 1) < p)
 
-    def model_estimation(self, coefficients_pawns, coefficients_kings):
-        best_pawn, second_best_pawn = coefficients_pawns[-1], coefficients_pawns[-2]
-        worst_pawn = coefficients_pawns[0]
-        best_king, second_best_king = coefficients_kings[-1], coefficients_kings[-2]
-        worst_king = coefficients_kings[0]
+    def model_estimation(self, coefficients_pawns, coefficients_kings, coefficients_diff):
+        best_pawn, second_best_pawn, worst_pawn = coefficients_pawns[-1], coefficients_pawns[-2], coefficients_pawns[0]
+        best_king, second_best_king, worst_king = coefficients_kings[-1], coefficients_kings[-2], coefficients_kings[0]
+        best_diff, second_best_diff, worst_diff = coefficients_diff[-1], coefficients_diff[-2], coefficients_diff[0]
+
         self.mean = self.mean * (1 - self.learning_rate) + (
                 best_pawn + second_best_pawn - worst_pawn) * self.learning_rate
         disturbation_vector = np.array(
@@ -35,6 +35,7 @@ class PBILc(Evolutionary):
                      disturbation_vector * (self.mean * (1 - self.disturbance_probability) +
                                             self.binary_random(0.5) * self.disturbance_probability))
         self.deviation *= self.disturbance_constant
+
         self.mean_kings = self.mean_kings * (1 - self.learning_rate) + (
                 best_king + second_best_king - worst_king) * self.learning_rate
         disturbation_vector = np.array(
@@ -44,25 +45,15 @@ class PBILc(Evolutionary):
                                                   self.binary_random(0.5) * self.disturbance_probability))
         self.deviation_kings *= self.disturbance_constant
 
-    # def model_estimation(self, coefficients_pawns, coefficients_kings):
-    #     best_pawn, second_best_pawn, worst_pawn = coefficients_pawns[-1], coefficients_pawns[-2], coefficients_pawns[0]
-    #     best_king, second_best_king, worst_king = coefficients_kings[-1], coefficients_kings[-2], coefficients_kings[0]
-    #
-    #     self.mean = self.mean * (1 - self.learning_rate) + (
-    #                 best_pawn + second_best_pawn - worst_pawn) * self.learning_rate
-    #     disturbation_vector = np.random.rand(self.individual_length_pawns) < self.mutation_probability
-    #     adjusted_mean_pawns = self.mean * (1 - self.disturbance_probability) + self.binary_random(
-    #         0.5) * self.disturbance_probability
-    #     self.mean = np.where(disturbation_vector, adjusted_mean_pawns, self.mean)
-    #     self.deviation *= self.disturbance_constant
-    #
-    #     self.mean_kings = self.mean_kings * (1 - self.learning_rate) + (
-    #             best_king + second_best_king - worst_king) * self.learning_rate
-    #     disturbation_vector = np.random.rand(self.individual_length_kings) < self.mutation_probability
-    #     adjusted_mean_kings = self.mean_kings * (1 - self.disturbance_probability) + self.binary_random(
-    #         0.5) * self.disturbance_probability
-    #     self.mean_kings = np.where(disturbation_vector, adjusted_mean_kings, self.mean_kings)
-    #     self.deviation_kings *= self.disturbance_constant
+        self.mean_diff = self.mean_diff * (1 - self.learning_rate) + (
+                best_diff + second_best_diff - worst_diff) * self.learning_rate
+        disturbation_vector = np.array(
+            [(random.uniform(0, 1) < self.mutation_probability)])
+        self.mean_diff = (np.invert(disturbation_vector) * self.mean_diff +
+                          disturbation_vector * (self.mean_diff * (1 - self.disturbance_probability) +
+                                                 self.binary_random(0.5) * self.disturbance_probability))
+        self.deviation_diff *= self.disturbance_constant
+
 
     def run(self, x):
         self.init()
@@ -70,7 +61,10 @@ class PBILc(Evolutionary):
         print(f'---------------------------------------------------')
         for i in range(self.iters):
             print(f'n: {x}, iter: {i}')
-            self.model_estimation(self.coefficients_pawns[np.argsort(values)], self.coefficients_kings[np.argsort(values)])
+            self.model_estimation(self.coefficients_pawns[np.argsort(values)],
+                                  self.coefficients_kings[np.argsort(values)], self.diff[np.argsort(values)])
             self.random_coefficients()
+            if i % 10 == 5:
+                self.show_iters(i, x)
             values = self.evaluate(i + 1, x)
         return self.coefficients_pawns[np.argmax(values)], self.coefficients_kings[np.argmax(values)]
