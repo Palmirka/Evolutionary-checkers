@@ -54,8 +54,18 @@ class TestStructsTypes(unittest.TestCase):
         piece = module.Piece(module.Type.KING,module.Color.BLACK)
         self.assertEqual(piece.type, 2)
         self.assertEqual(piece.color, 1)
+
+class TestBitCounting(unittest.TestCase):
+    def test_simple(self):
+        engine = module.Engine()
+        engine.reset()
+        self.assertEqual(engine.count_white_pieces(), 12)
+        self.assertEqual(engine.count_black_pieces(), 12)
+        self.assertEqual(engine.count_white_kings(), 0)
+        self.assertEqual(engine.count_black_kings(), 0)
+        self.assertEqual(engine.count_64b_bitboard(engine.white_pieces() | engine.black_pieces()), 24)
         
-class TestEngine(unittest.TestCase):
+class TestEngine(unittest.TestCase): 
     def test_init(self):
         try:
             engine = module.Engine()

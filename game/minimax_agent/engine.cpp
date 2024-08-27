@@ -585,6 +585,12 @@ Bitboard Engine::black_pieces(){ return pieces[BLACK] & ~kings; }
 Bitboard Engine::white_kings() { return pieces[WHITE] & kings; }
 Bitboard Engine::black_kings() { return pieces[BLACK] & kings; }
 
+int Engine::count_white_pieces() { return count_bits(pieces[WHITE] & ~kings); }
+int Engine::count_black_pieces() { return count_bits(pieces[BLACK] & ~kings); }
+int Engine::count_white_kings() { return count_bits(pieces[WHITE] & kings); }
+int Engine::count_black_kings() { return count_bits(pieces[BLACK] & kings); }
+int Engine::count_64b_bitboard(Bitboard bb) { return count_bits(bb); }
+
 // pybind11::dict Engine::__getstate__() const {
 //     pybind11::dict state;
 //     state["pieces"] = pybind11::array_t<Bitboard>(

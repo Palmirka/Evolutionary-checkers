@@ -26,6 +26,12 @@ public:
     Bitboard    white_kings();
     Bitboard    black_kings();
 
+    int         count_white_pieces();
+    int         count_black_pieces();
+    int         count_white_kings();
+    int         count_black_kings();
+    int         count_64b_bitboard(Bitboard bb);
+
     MoveList    legal_moves() const;
     MoveList    legal_captures() const;
     std::pair<MoveList, int> legal_king_capture_moves(int depth, Square continue_from_sq=64) const;

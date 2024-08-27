@@ -90,6 +90,11 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         .def("black_pieces", &Engine::black_pieces)
         .def("white_kings", &Engine::white_kings)
         .def("black_kings", &Engine::black_kings)
+        .def("count_white_pieces", &Engine::count_white_pieces)
+        .def("count_black_pieces", &Engine::count_black_pieces)
+        .def("count_white_kings", &Engine::count_white_kings)
+        .def("count_black_kings", &Engine::count_black_kings)
+        .def("count_64b_bitboard", &Engine::count_64b_bitboard)
             .def(py::pickle(
         [](const Engine &self) { // __getstate__
             return py::make_tuple(
