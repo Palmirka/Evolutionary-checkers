@@ -23,3 +23,16 @@ with open('pickle', 'rb') as handle:
 
 unpickled_engine.print()
 print_legal_moves(unpickled_engine)
+
+
+minimax = module.Minimax()
+print(minimax.minimax_move(engine, 3, module.Color.WHITE).to)
+
+with open('pickle_minimax', 'wb') as handle:
+    pickle.dump(minimax, handle)
+
+
+with open('pickle_minimax', 'rb') as handle:
+    unpickled_minimax = pickle.loads(handle.read())
+
+print(unpickled_minimax.minimax_move(engine, 3, module.Color.WHITE).to)

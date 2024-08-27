@@ -19,7 +19,7 @@ public:
 };
 
 class Minimax {
-    private:
+    public:
         std::mt19937 randengine;
         Bitboard center;
         Bitboard back_row_bridge_1;

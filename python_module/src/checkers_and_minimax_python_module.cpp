@@ -70,7 +70,6 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         .def("size", &MoveList::size)
         .def("clear", &MoveList::clear);
 
-
     py::class_<Engine>(m, "Engine")
         .def(py::init<>())
         .def(py::init<const Engine&>())
@@ -95,7 +94,7 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         .def("count_white_kings", &Engine::count_white_kings)
         .def("count_black_kings", &Engine::count_black_kings)
         .def("count_64b_bitboard", &Engine::count_64b_bitboard)
-            .def(py::pickle(
+        .def(py::pickle(
         [](const Engine &self) { // __getstate__
             return py::make_tuple(
                 py::array_t<Bitboard>({2}, self.pieces),
@@ -124,6 +123,28 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
         .def(py::init<double>(), 
             py::arg("temp") = 1.0)
         .def("minimax_move", &Minimax::minimax_move)
+        .def(py::pickle(
+            [](const Minimax &self) { // __getstate__
+                return py::make_tuple(
+                    self.scores,
+                    self.TEMPERATURE,
+                    self.hashmap_white,
+                    self.hashmap_black
+                );
+            },
+            [](py::tuple t) { // __setstate__, brak parametru `self`
+                if (t.size() != 4)
+                    throw std::runtime_error("Zły format stanu!");
+
+                Minimax obj;
+                obj.scores = t[0].cast<std::vector<Bitboard>>();
+                obj.TEMPERATURE = t[1].cast<double>();
+                obj.hashmap_white = t[2].cast<std::unordered_map<Engine, SoftmaxPair, HashEngine>>();
+                obj.hashmap_black = t[3].cast<std::unordered_map<Engine, SoftmaxPair, HashEngine>>();
+                
+                return obj;
+            }
+        ))
         ;
 }
 
