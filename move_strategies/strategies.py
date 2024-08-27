@@ -7,6 +7,7 @@ class MoveStrategy:
 
     def __init__(self, **strategy_kwargs):
         self.strategy_kwargs = strategy_kwargs
+        self.minimax = Minimax()
 
     def first_in_row(self, game: Engine):
         """Take first found move"""
@@ -18,5 +19,4 @@ class MoveStrategy:
         return moves[random.randint(0, len(moves) - 1)]
 
     def minimax(self, game: Engine):
-        minimax = Minimax()
-        return minimax.minimax_move(game, self.strategy_kwargs.get('depth', 2), Color.BLACK)
+        return self.minimax.minimax_move(game, self.strategy_kwargs.get('depth', 2), Color.BLACK)

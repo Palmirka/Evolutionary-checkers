@@ -1,11 +1,12 @@
 import numpy as np
+import pickle
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 from checkers_and_minimax_python_module import Engine, MoveList
 from move_strategies.strategies import MoveStrategy
 from game.play import Play
 from game.constants import MAX_POINTS, MAX_COEFFICIENT, POSSIBLE_VALUES
-from typing import Callable, Tuple, List
+from typing import Callable, Tuple
 from numpy.typing import NDArray
 
 
@@ -33,6 +34,7 @@ class EvolutionaryDiscrete:
 
         self.best_coefficients_pawns = np.empty((self.n, self.individual_length_pawns), int)
         self.best_coefficients_kings = np.empty((self.n, self.individual_length_kings), int)
+        self.best_diff = np.empty((self.n, 1), float)
         self.max_evaluations = np.empty((self.n, self.iters + 1), float)
         self.min_evaluations = np.empty((self.n, self.iters + 1), float)
         self.mean_evaluations = np.empty((self.n, self.iters + 1), float)
@@ -103,11 +105,20 @@ class EvolutionaryDiscrete:
         """Single run of experiment"""
         pass
 
-    def run_n_times(self) -> Tuple[np.ndarray, np.ndarray]:
+    def run_n_times(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Save results from n runs of function"""
         for x in range(self.n):
-            self.best_coefficients_pawns[x], self.best_coefficients_kings[x] = self.run(x)
-        return self.best_coefficients_pawns, self.best_coefficients_kings
+            self.best_coefficients_pawns[x], self.best_coefficients_kings[x], self.best_diff = self.run(x)
+        return self.best_coefficients_pawns, self.best_coefficients_kings, self.best_diff
+
+    def save(self):
+        results = {
+            'pawns': self.best_coefficients_pawns,
+            'kings': self.best_coefficients_kings,
+            'diff' : self.best_diff
+        }
+        with open('results.txt', 'wb') as handle:
+            pickle.dump(results, handle)
 
     def show(self):
         """Show evaluation of fitness function"""
@@ -122,6 +133,7 @@ class EvolutionaryDiscrete:
         plt.show()
 
     def show_iters(self, iter, n):
+        """Show evaluation of fitness function during given iter"""
         plt.figure()
         plt.title(f'{self.__class__.__name__}, n = {n}, iter = {iter}')
         plt.plot([-MAX_POINTS] * (self.iters + 1), color='r')

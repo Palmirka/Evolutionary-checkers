@@ -157,4 +157,4 @@ class PBIL(EvolutionaryDiscrete):
                 self.show_iters(i, x)
             values = self.evaluate(i + 1, x)
             self.opponent_strategy_iters -= 1
-        return self.coefficients_pawns[np.argmax(values)], self.coefficients_kings[np.argmax(values)]
+        return self.coefficients_pawns[np.argmax(values)], self.coefficients_kings[np.argmax(values)], self.diff[np.argmax(values)]
