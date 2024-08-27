@@ -25,12 +25,24 @@ class PBILc(Evolutionary):
         return int(random.uniform(0, 1) < p)
 
     def model_estimation(self, coefficients_pawns, coefficients_kings, coefficients_diff):
+        best_percentage = 3
+        
         best_pawn, second_best_pawn, worst_pawn = coefficients_pawns[-1], coefficients_pawns[-2], coefficients_pawns[0]
         best_king, second_best_king, worst_king = coefficients_kings[-1], coefficients_kings[-2], coefficients_kings[0]
         best_diff, second_best_diff, worst_diff = coefficients_diff[-1], coefficients_diff[-2], coefficients_diff[0]
 
+        target_pawns = 0
+        target_kings = 0
+        target_diff = 0
+        best_to_cut = int(best_percentage/100*self.population_size)
+        print("no. elite pawns: ", best_to_cut)
+        for i in range(1, best_to_cut+1):
+            target_pawns += coefficients_pawns[-i]
+            target_kings += coefficients_kings[-i]
+            target_diff += coefficients_diff[-i]
+
         self.mean = self.mean * (1 - self.learning_rate) + (
-                best_pawn + second_best_pawn) * self.learning_rate
+                target_pawns) * self.learning_rate
         disturbation_vector = np.array(
             [(random.uniform(0, 1) < self.mutation_probability) for _ in range(self.individual_length_pawns)])
         self.mean = (np.invert(disturbation_vector) * self.mean +
@@ -39,7 +51,7 @@ class PBILc(Evolutionary):
         self.deviation *= self.disturbance_constant
 
         self.mean_kings = self.mean_kings * (1 - self.learning_rate) + (
-                best_king + second_best_king) * self.learning_rate
+                target_kings) * self.learning_rate
         disturbation_vector = np.array(
             [(random.uniform(0, 1) < self.mutation_probability) for _ in range(self.individual_length_kings)])
         self.mean_kings = (np.invert(disturbation_vector) * self.mean_kings +
@@ -48,7 +60,7 @@ class PBILc(Evolutionary):
         self.deviation_kings *= self.disturbance_constant
 
         self.mean_diff = self.mean_diff * (1 - self.learning_rate) + (
-                best_diff + second_best_diff) * self.learning_rate
+                target_diff) * self.learning_rate
         disturbation_vector = np.array(
             [(random.uniform(0, 1) < self.mutation_probability)])
         self.mean_diff = (np.invert(disturbation_vector) * self.mean_diff +
