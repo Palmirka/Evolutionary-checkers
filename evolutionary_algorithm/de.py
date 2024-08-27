@@ -30,6 +30,8 @@ class DE (Evolutionary):
                 Crossover.combine_best(self.diff, mutated_diff, self.crossover_factor)
             mutated_values = self.evaluate(i, x, crossover_pawns, crossover_kings, crossover_diff, False)
             self.coefficients_pawns, self.coefficients_kings, self.diff = \
-                Selection.replacement(self.coefficients_pawns, self.coefficients_kings, crossover_pawns, crossover_kings, crossover_diff, values, mutated_values)
+                Selection.replacement(self.coefficients_pawns, self.coefficients_kings, self.diff, crossover_pawns, crossover_kings, crossover_diff, values, mutated_values)
+            if i % 10 == 5:
+                self.show_iters(i, x)
             values = self.evaluate(i + 1, x)
         return self.coefficients_pawns[np.argmax(values)], self.coefficients_kings[np.argmax(values)]

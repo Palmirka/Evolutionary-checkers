@@ -36,16 +36,24 @@ class Objective:
     def function(self, game: Engine, coefficients: np.ndarray, diff: int, is_king: bool) -> float:
         """Fitness function that grades actual board state"""
         if is_king:
-            masks = bin(check_board(game.white_pieces(), game.black_pieces(), game.white_kings(), game.black_kings(),
-                                    self.usage_k, self.values_white_p_k, self.values_black_p_k, self.values_white_k_k,
-                                    self.values_black_k_k, self.size_k))[2:].zfill(self.size_k)
+            check_result = check_board(
+                game.white_pieces(), game.black_pieces(), game.white_kings(), game.black_kings(),
+                self.usage_k, self.values_white_p_k, self.values_black_p_k, self.values_white_k_k,
+                self.values_black_k_k, self.size_k
+            )
+            size = self.size_k
         else:
-            masks = bin(check_board(game.white_pieces(), game.black_pieces(), 0, 0,
-                                    self.usage_p, self.values_white_p_p, self.values_black_p_p, {i: 0 for i in range(64)}, {i: 0 for i in range(64)},
-                                    self.size_p))[2:].zfill(self.size_p)
-            # print(masks)
+            check_result = check_board(
+                game.white_pieces(), game.black_pieces(), 0, 0,
+                self.usage_p, self.values_white_p_p, self.values_black_p_p,
+                {i: 0 for i in range(64)}, {i: 0 for i in range(64)}, self.size_p
+            )
+            size = self.size_p
 
-        result = sum([c if masks[idx] == '1' else 0 for idx, c in enumerate(coefficients)])
+        masks = np.array(list(np.binary_repr(check_result, width=size))).astype(bool)
+        result = np.sum(coefficients[masks])
+
+        #result = sum([c if masks[idx] == '1' else 0 for idx, c in enumerate(coefficients)])
         result += diff * (2 * bin(game.white_pieces()).count('1') + 3 * bin(game.white_kings()).count('1') -
                           2 * bin(game.black_pieces()).count('1') - 3 * bin(game.black_kings()).count('1'))
 

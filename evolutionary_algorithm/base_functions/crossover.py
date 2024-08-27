@@ -1,5 +1,4 @@
 import numpy as np
-import random
 
 
 class Crossover:
@@ -7,15 +6,13 @@ class Crossover:
 
     @staticmethod
     def combine_best(population: np.ndarray, mutants: np.ndarray, crossover_factor: float):
-        def single_cross(individual: np.ndarray, mutant: np.ndarray):
-            crossed = []
-            for idx in range(individual.size):
-                if random.uniform(0, 1) < crossover_factor:
-                    crossed.append(mutant[idx])
-                else:
-                    crossed.append(individual[idx])
-            return crossed
-
-        crossed_population = np.array(
-            [single_cross(population[idx], mutants[idx]) for idx in range(population.shape[0])])
+        # def single_cross(individual: np.ndarray, mutant: np.ndarray):
+        #     crossed = np.random.rand(individual.size) < crossover_factor
+        #     crossed_individual = np.where(crossed, mutant, individual)
+        #     return crossed_individual
+        #
+        # crossed_population = np.array(
+        #     [single_cross(population[idx], mutants[idx]) for idx in range(population.shape[0])])
+        crossover_mask = np.random.rand(*population.shape) < crossover_factor
+        crossed_population = np.where(crossover_mask, mutants, population)
         return crossed_population

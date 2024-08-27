@@ -84,13 +84,13 @@ class Evolutionary:
             diff = self.diff
 
         values = np.zeros(self.population_size)
-        for idx in range(self.population_size):
-            _, values[idx] = evaluate_individual(idx, pawns, kings, diff)
-        # results = Parallel(n_jobs=-1)(
-        #     delayed(evaluate_individual)(idx, pawns, kings, diff) for idx in range(self.population_size))
-        #
-        # for idx, value in results:
-        #     values[idx] = value
+        # for idx in range(self.population_size):
+        #     _, values[idx] = evaluate_individual(idx, pawns, kings, diff)
+        results = Parallel(n_jobs=-1)(
+            delayed(evaluate_individual)(idx, pawns, kings, diff) for idx in range(self.population_size))
+
+        for idx, value in results:
+            values[idx] = value
         if save:
             self.max_evaluations[x][i] = np.max(values)
             self.min_evaluations[x][i] = np.min(values)
@@ -103,9 +103,6 @@ class Evolutionary:
 
     def run_n_times(self) -> Tuple[np.ndarray, np.ndarray]:
         """Save results from n runs of function"""
-
-        # results = Parallel(n_jobs=-1)(
-        #     delayed(self.run)(x) for x in range(self.n))
 
         for x in range(self.n):
             self.best_coefficients_pawns[x], self.best_coefficients_kings[x] = self.run(x)
