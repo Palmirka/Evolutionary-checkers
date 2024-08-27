@@ -139,8 +139,8 @@ PYBIND11_MODULE(checkers_and_minimax_python_module, m)
                 Minimax obj;
                 obj.scores = t[0].cast<std::vector<Bitboard>>();
                 obj.TEMPERATURE = t[1].cast<double>();
-                obj.hashmap_white = t[2].cast<std::unordered_map<Engine, SoftmaxPair, HashEngine>>();
-                obj.hashmap_black = t[3].cast<std::unordered_map<Engine, SoftmaxPair, HashEngine>>();
+                obj.hashmap_white = t[2].cast<tbb::concurrent_unordered_map<Engine, SoftmaxPair, HashEngine>>();
+                obj.hashmap_black = t[3].cast<tbb::concurrent_unordered_map<Engine, SoftmaxPair, HashEngine>>();
                 
                 return obj;
             }

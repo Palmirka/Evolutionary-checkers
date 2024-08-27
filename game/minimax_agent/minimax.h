@@ -5,6 +5,7 @@
 #include <random>
 #include <unordered_map>
 #include <iostream>
+#include <tbb/concurrent_unordered_map.h>
 
 using MovePair = std::pair<Move, int>;
 using ListValPair = std::pair<int, int>;
@@ -34,8 +35,8 @@ class Minimax {
         std::vector<Bitboard> scores;
         double TEMPERATURE = 1.0;
     public: 
-        std::unordered_map< Engine, SoftmaxPair, HashEngine> hashmap_white;
-        std::unordered_map< Engine, SoftmaxPair, HashEngine> hashmap_black;
+        tbb::concurrent_unordered_map< Engine, SoftmaxPair, HashEngine> hashmap_white;
+        tbb::concurrent_unordered_map< Engine, SoftmaxPair, HashEngine> hashmap_black;
         Minimax(double temp = 1.0) : randengine(std::random_device()())
         {
             TEMPERATURE = temp;
