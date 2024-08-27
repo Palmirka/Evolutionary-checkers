@@ -5,18 +5,18 @@ from checkers_and_minimax_python_module import Engine, Minimax, Color
 class MoveStrategy:
     """Tested strategies against our AI"""
 
-    @staticmethod
-    def first_in_row(game: Engine, **kwargs):
+    def __init__(self, **strategy_kwargs):
+        self.strategy_kwargs = strategy_kwargs
+
+    def first_in_row(self, game: Engine):
         """Take first found move"""
         return game.legal_moves_lists(game)[0]
 
-    @staticmethod
-    def random(game: Engine, **kwargs):
+    def random(self, game: Engine):
         """Take random move"""
         moves = game.legal_moves_lists(game)
         return moves[random.randint(0, len(moves) - 1)]
 
-    @staticmethod
-    def minimax(game: Engine, **kwargs):
+    def minimax(self, game: Engine):
         minimax = Minimax()
-        return minimax.minimax_move(game, kwargs.get('depth', 2), Color.BLACK)
+        return minimax.minimax_move(game, self.strategy_kwargs.get('depth', 2), Color.BLACK)

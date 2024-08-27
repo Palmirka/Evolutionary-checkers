@@ -1,4 +1,5 @@
 from numpy import ndarray
+import numpy as np
 from math import inf
 from checkers_and_minimax_python_module import Engine, Color, Minimax, MoveList
 from typing import Callable
@@ -25,9 +26,7 @@ class Play:
         for move in moves:
             old_game = Engine(self.game)
             old_game.act(move)
-            # old_game.print()
             value = self.objective_function(old_game, coefficients, self.diff, self.is_king)
-            # print('     Move:', value)
             if value > best_move['value']:
                 best_move = {'field': move, 'value': value}
         return best_move
@@ -77,24 +76,27 @@ class Play:
     #                 self.game.act(self.strategy(self.game, **strategy_args))
     #     return self.points(player)
 
-    def play(self, id, **strategy_args):
+    def play(self, idx, n, **strategy_args):
         """Gameplay against opponent"""
-        self.game.reset()
-        player = Color.WHITE
-        # player = random.choice([Color.WHITE, Color.BLACK])
-        while self.game.isFinished() < 0:
-            while self.game.turn == Color.WHITE and self.game.isFinished() < 0:
-                if self.game.turn == player:
-                    if self.game.white_kings() + self.game.black_kings() > 0:
-                        self.is_king = 1
-                    self.game.act(self.find_best_move()['field'])
-                else:
-                    self.game.act(self.strategy(self.game, **strategy_args))
-            if self.game.turn == Color.BLACK and self.game.isFinished() < 0:
-                if self.game.turn == player:
-                    if self.game.white_kings() + self.game.black_kings() > 0:
-                        self.is_king = 1
-                    self.game.act(self.find_best_move()['field'])
-                else:
-                    self.game.act(self.strategy(self.game, **strategy_args))
-        return self.points(player)
+        def single_gameplay():
+            self.game.reset()
+            player = Color.WHITE
+            # player = random.choice([Color.WHITE, Color.BLACK])
+            while self.game.isFinished() < 0:
+                while self.game.turn == Color.WHITE and self.game.isFinished() < 0:
+                    if self.game.turn == player:
+                        if self.game.white_kings() + self.game.black_kings() > 0:
+                            self.is_king = 1
+                        self.game.act(self.find_best_move()['field'])
+                    else:
+                        self.game.act(self.strategy(self.game))
+                if self.game.turn == Color.BLACK and self.game.isFinished() < 0:
+                    if self.game.turn == player:
+                        if self.game.white_kings() + self.game.black_kings() > 0:
+                            self.is_king = 1
+                        self.game.act(self.find_best_move()['field'])
+                    else:
+                        self.game.act(self.strategy(self.game))
+            return self.points(player)
+
+        return np.mean(np.array([single_gameplay() for _ in range(n)]))
