@@ -25,7 +25,7 @@ class PBILc(Evolutionary):
         return int(random.uniform(0, 1) < p)
 
     def model_estimation(self, coefficients_pawns, coefficients_kings, coefficients_diff):
-        best_percentage = 3
+        best_percentage = 7
         
         best_pawn, second_best_pawn, worst_pawn = coefficients_pawns[-1], coefficients_pawns[-2], coefficients_pawns[0]
         best_king, second_best_king, worst_king = coefficients_kings[-1], coefficients_kings[-2], coefficients_kings[0]
