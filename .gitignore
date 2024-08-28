@@ -166,3 +166,5 @@ papers/
 
 # Jupyter checkpoints
 *.ipynb_checkpoints
+
+main.ipynb

@@ -45,9 +45,9 @@ class EvolutionaryDiscrete:
         self.diff_probability.fill(1 / POSSIBLE_VALUES)
         self.probabilities.fill(1 / POSSIBLE_VALUES)
         self.probabilities_kings.fill(1 / POSSIBLE_VALUES)
-        self.random_coefficients(np.random.randint(-10, 11, self.individual_length_pawns),
-                                 np.random.randint(-10, 11, self.individual_length_kings),
-                                 np.random.randint(-10, 11, 1))
+        self.random_coefficients(np.random.randint(-MAX_COEFFICIENT, MAX_COEFFICIENT + 1, self.individual_length_pawns),
+                                 np.random.randint(-MAX_COEFFICIENT, MAX_COEFFICIENT + 1, self.individual_length_kings),
+                                 np.random.randint(-MAX_COEFFICIENT, MAX_COEFFICIENT + 1, 1))
 
     def set_opponent_strategy(self) -> None:
         (self.opponent_strategy, self.opponent_strategy_iters), self.opponent_strategy_list = \
@@ -56,13 +56,9 @@ class EvolutionaryDiscrete:
     def random_coefficients(self, best_pawns, best_kings, best_diff) -> None:
         """Generate coefficients with normal distribution"""
 
-        def single_random(probabilities, length, debug=False):
+        def single_random(probabilities, length):
             mask = np.random.random(length)
             cumulative = np.cumsum(probabilities, axis=1)
-            if debug:
-                print(mask)
-                print('xd: ', cumulative)
-                print(np.where(cumulative[0] > mask[0])[0][0])
             return np.array([np.where(cumulative[i] > mask[i])[0][0] - MAX_COEFFICIENT for i in range(length)])
 
         self.coefficients_pawns = np.array([single_random(self.probabilities, self.individual_length_pawns)

@@ -51,26 +51,26 @@ class Evolutionary:
         self.deviation_kings = np.ones(self.individual_length_kings)
         self.mean_diff = np.zeros(1)
         self.deviation_diff = np.ones(1)
-        self.random_coefficients()
+        self.random_coefficients(np.random.normal(0, 1, self.individual_length_pawns),
+                                 np.random.normal(0, 1, self.individual_length_kings),
+                                 np.random.normal(0, 1, 1))
 
     def set_opponent_strategy(self) -> None:
         (self.opponent_strategy, self.opponent_strategy_iters), self.opponent_strategy_list = \
             self.opponent_strategy_list[0], self.opponent_strategy_list[1:]
 
-    def random_coefficients(self) -> None:
+    def random_coefficients(self, best_pawns, best_kings, best_diff) -> None:
         """Generate coefficients with normal distribution"""
 
         def single_random(mean, deviation, length):
             return np.array([np.random.normal(mean[i], deviation[i]) for i in range(length)])
 
         self.coefficients_pawns = np.array([single_random(self.mean, self.deviation, self.individual_length_pawns)
-                                            for _ in range(self.population_size)])
-        self.coefficients_kings = np.array(
-            [single_random(self.mean_kings, self.deviation_kings, self.individual_length_kings)
-             for _ in range(self.population_size)])
-        np.random.normal(self.mean_diff[0], self.deviation_diff[0])
-        self.diff = np.array(
-            [single_random(self.mean_diff, self.deviation_diff, 1) for _ in range(self.population_size)])
+                                            for _ in range(self.population_size - 1)] + [best_pawns])
+        self.coefficients_kings = np.array([single_random(self.mean_kings, self.deviation_kings, self.individual_length_kings)
+                                            for _ in range(self.population_size - 1)] + [best_kings])
+        self.diff = np.array([single_random(self.mean_diff, self.deviation_diff, 1)
+                              for _ in range(self.population_size - 1)] + [best_diff])
 
     def model_estimation(self, coefficient_pawns, coefficient_kings, idx):
         """Estimate probability parameters to generate better population"""

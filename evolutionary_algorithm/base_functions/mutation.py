@@ -1,7 +1,7 @@
 from random import random
 import numpy as np
 from typing import Callable
-from game.constants import POSSIBLE_VALUES
+from game.constants import POSSIBLE_VALUES, MAX_COEFFICIENT
 
 
 class Mutation:
@@ -28,7 +28,7 @@ class Mutation:
     def random_value(probabilities: np.ndarray, mutation_probability: float,  mutation_constant: float, individual_length):
         for j in range(individual_length):
             if np.random.random() < mutation_probability:
-                for value in range(-POSSIBLE_VALUES, POSSIBLE_VALUES + 1):
+                for value in range(MAX_COEFFICIENT):
                     probabilities[j][value] = probabilities[j][value] * (1 - mutation_constant) + mutation_constant * np.random.random()
                 probabilities[j] /= probabilities[j].sum()
         return probabilities
