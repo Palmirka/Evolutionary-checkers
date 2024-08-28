@@ -28,8 +28,18 @@ class PBIL(EvolutionaryDiscrete):
 
         # new_learning_rate = self.learning_rate - (0.9*self.learning_rate)*(it/self.iters)
 
+        cut_value_point = (np.mean(values) + np.max(values))/2
+        indices_above_cutpoint = np.where(values > cut_value_point)[0]
+        # print(values)
+        # print(np.array(values[indices_above_cutpoint]))
         sorted_values = np.argsort(values)
-        sorted_pawns = self.coefficients_pawns[sorted_values]
+
+        mask = np.isin(sorted_values, indices_above_cutpoint)
+        filtr = sorted_values[mask]
+        # print(sorted_values)
+        # print(filtr)
+
+        sorted_pawns = self.coefficients_pawns[filtr]
         best_cut_size = int(best_percentage/100*self.population_size)
         if best_cut_size == 0:
             best_cut_size = 1
@@ -43,7 +53,7 @@ class PBIL(EvolutionaryDiscrete):
         self.probabilities = self.probabilities * (1 - self.learning_rate) + self.learning_rate*(targets)
         self.probabilities /= self.probabilities.sum(axis=1)[0]
 
-        sorted_kings = self.coefficients_kings[sorted_values]
+        sorted_kings = self.coefficients_kings[filtr]
         best_kings = sorted_kings[-best_cut_size:][::-1]
 
         targets = np.zeros((self.individual_length_kings, POSSIBLE_VALUES))
@@ -54,7 +64,7 @@ class PBIL(EvolutionaryDiscrete):
                     targets - targets_worst)
         self.probabilities_kings /= self.probabilities_kings.sum(axis=1)[0]
 
-        sorted_diff = self.diff[sorted_values]
+        sorted_diff = self.diff[filtr]
         best_diff = sorted_diff[-best_cut_size:][::-1]
 
         targets = np.zeros((1, POSSIBLE_VALUES))
