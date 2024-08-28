@@ -24,17 +24,31 @@ class PBILc(Evolutionary):
     def binary_random(p):
         return int(random.uniform(0, 1) < p)
 
-    def model_estimation(self, coefficients_pawns, coefficients_kings, coefficients_diff):
+    def model_estimation(self, values, coefficients_pawns, coefficients_kings, coefficients_diff):
         best_percentage = 7
-        best_pawn, second_best_pawn, worst_pawn = coefficients_pawns[-1], coefficients_pawns[-2], coefficients_pawns[0]
-        best_king, second_best_king, worst_king = coefficients_kings[-1], coefficients_kings[-2], coefficients_kings[0]
-        best_diff, second_best_diff, worst_diff = coefficients_diff[-1], coefficients_diff[-2], coefficients_diff[0]
+        cut_value_point = (np.mean(values) + np.max(values))/2
+        indices_above_cutpoint = np.where(values > cut_value_point)[0]
+        sorted_values = np.argsort(values)
+
+        mask = np.isin(sorted_values, indices_above_cutpoint)
+        filtr = sorted_values[mask]
+        sorted_pawns = coefficients_pawns[filtr][::-1]
+        sorted_kings = coefficients_kings[filtr][::-1]
+        sorted_diff = coefficients_diff[filtr][::-1]
+
+        best_pawn = sorted_pawns[-1]
+        best_king = sorted_kings[-1]
+        best_diff = sorted_diff[-1]
+
+        print(values)
+        print(sorted_values)
+        print(filtr)
 
         best_to_cut = int(best_percentage / 100 * self.population_size)
         print("no. elite pawns: ", best_to_cut)
-        target_pawns = np.sum(coefficients_pawns[-best_to_cut:])
-        target_kings = np.sum(coefficients_kings[-best_to_cut:])
-        target_diff = np.sum(coefficients_diff[-best_to_cut:])
+        target_pawns = np.sum(sorted_pawns[-best_to_cut:])
+        target_kings = np.sum(sorted_kings[-best_to_cut:])
+        target_diff = np.sum(sorted_diff[-best_to_cut:])
 
         def single_model(mean, target, deviation, individual_length):
             mean = mean * (1 - self.learning_rate) + target * self.learning_rate
@@ -87,9 +101,10 @@ class PBILc(Evolutionary):
             if self.opponent_strategy_iters == 0:
                 self.set_opponent_strategy()
                 print('Switched to: ', self.opponent_strategy.__name__)
-            best_pawn, best_king, best_diff = self.model_estimation(self.coefficients_pawns[np.argsort(values)],
-                                                                    self.coefficients_kings[np.argsort(values)],
-                                                                    self.diff[np.argsort(values)])
+            best_pawn, best_king, best_diff = self.model_estimation(values,
+                                                                    self.coefficients_pawns,
+                                                                    self.coefficients_kings,
+                                                                    self.diff)
             self.random_coefficients(best_pawn, best_king, best_diff)
             if i % 10 == 5:
                 self.show_iters(i, x)
