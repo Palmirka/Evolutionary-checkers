@@ -26,10 +26,9 @@ class Mutation:
 
     @staticmethod
     def random_value(probabilities: np.ndarray, mutation_probability: float,  mutation_constant: float, individual_length):
-        # mask = np.random.random(individual_length) < mutation_probability
         for j in range(individual_length):
             if np.random.random() < mutation_probability:
-                for value in range(-10, 11):
+                for value in range(-POSSIBLE_VALUES, POSSIBLE_VALUES + 1):
                     probabilities[j][value] = probabilities[j][value] * (1 - mutation_constant) + mutation_constant * np.random.random()
                 probabilities[j] /= probabilities[j].sum()
         return probabilities

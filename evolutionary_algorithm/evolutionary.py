@@ -37,7 +37,7 @@ class Evolutionary:
 
         self.best_coefficients_pawns = np.empty((self.n, self.individual_length_pawns), float)
         self.best_coefficients_kings = np.empty((self.n, self.individual_length_kings), float)
-        self.best_coefficients_diff =  np.empty((self.n, 1), float)
+        self.best_diff = np.empty((self.n, 1), float)
         self.max_evaluations = np.empty((self.n, self.iters + 1), float)
         self.min_evaluations = np.empty((self.n, self.iters + 1), float)
         self.mean_evaluations = np.empty((self.n, self.iters + 1), float)
@@ -110,7 +110,7 @@ class Evolutionary:
         """Single run of experiment"""
         pass
 
-    def run_n_times(self) -> Tuple[np.ndarray, np.ndarray]:
+    def run_n_times(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Save results from n runs of function"""
 
         for x in range(self.n):
