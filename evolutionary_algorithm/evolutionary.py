@@ -29,7 +29,7 @@ class Evolutionary:
         self.objective_function = objective.function
         self.coefficients_pawns = np.empty((population_size, objective.size_p), float)
         self.coefficients_kings = np.empty((population_size, objective.size_k), float)
-        self.diff = np.empty((population_size, 1), float)
+        self.coefficients_diff = np.empty((population_size, 1), float)
         self.population_size = population_size
         self.games_for_iter = games_for_iter
         self.iters = sum(data[1] for data in self.opponent_strategy_list)
@@ -69,10 +69,10 @@ class Evolutionary:
                                             for _ in range(self.population_size - 1)] + [best_pawns])
         self.coefficients_kings = np.array([single_random(self.mean_kings, self.deviation_kings, self.individual_length_kings)
                                             for _ in range(self.population_size - 1)] + [best_kings])
-        self.diff = np.array([single_random(self.mean_diff, self.deviation_diff, 1)
-                              for _ in range(self.population_size - 1)] + [best_diff])
+        self.coefficients_diff = np.array([single_random(self.mean_diff, self.deviation_diff, 1)
+                                            for _ in range(self.population_size - 1)] + [best_diff])
 
-    def model_estimation(self, coefficient_pawns, coefficient_kings, idx):
+    def model_estimation(self, values):
         """Estimate probability parameters to generate better population"""
         pass
 
@@ -90,7 +90,7 @@ class Evolutionary:
         if kings is None:
             kings = self.coefficients_kings
         if diff is None:
-            diff = self.diff
+            diff = self.coefficients_diff
 
         values = np.zeros(self.population_size)
         # for idx in range(self.population_size):
